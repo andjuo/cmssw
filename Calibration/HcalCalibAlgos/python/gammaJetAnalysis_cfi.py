@@ -9,10 +9,10 @@ GammaJetAnalysis = cms.EDAnalyzer('GammaJetAnalysis',
                                   PFMETColl           = cms.InputTag("pfMet"),
                                   PFMETTYPE1Coll      = cms.InputTag("pfType1CorrectedMet"),
                                   photonCollName      = cms.string('photons'),
-                                  caloJetCorrName     = cms.string('ak5CaloL2L3'),
-                                  pfJetCollName       = cms.string('ak5PFJetsCHS'),
-                                  pfJetCorrName       = cms.string('ak5PFchsL2L3'),
-                                  genJetCollName      = cms.string('ak5GenJets'),
+                                  caloJetCorrName     = cms.string('ak4CaloL2L3'),
+                                  pfJetCollName       = cms.string('ak4PFJetsCHS'),
+                                  pfJetCorrName       = cms.string('ak4PFCHSJetsL2L3'),
+                                  genJetCollName      = cms.string('ak4GenJets'),
                                   genParticleCollName = cms.string('genParticles'),
                                   genEventInfoName    = cms.string('generator'),
                                   hbheRecHitName      = cms.string('hbhereco'),
@@ -34,5 +34,3 @@ GammaJetAnalysis = cms.EDAnalyzer('GammaJetAnalysis',
                                   debug               = cms.untracked.int32(0),
                                   workOnAOD           = cms.bool(False)
                                   )
-
-

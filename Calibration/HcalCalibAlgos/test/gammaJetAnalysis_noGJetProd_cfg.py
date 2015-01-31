@@ -47,9 +47,8 @@ process.GammaJetAnalysis_noCHS.pfJetCorrName = cms.string('ak4PFL2L3')
 
 process.source = cms.Source("PoolSource", 
                             fileNames = cms.untracked.vstring(
-#    '/store/relval/CMSSW_7_3_0/RelValPhotonJets_Pt_10_13/GEN-SIM-RECO/MCRUN2_73_V7-v1/00000/522CE329-7B81-E411-B6C3-0025905A6110.root',
+    '/store/relval/CMSSW_7_3_0/RelValPhotonJets_Pt_10_13/GEN-SIM-RECO/MCRUN2_73_V7-v1/00000/522CE329-7B81-E411-B6C3-0025905A6110.root',
 #    '/store/relval/CMSSW_7_3_0/RelValPhotonJets_Pt_10_13/GEN-SIM-RECO/MCRUN2_73_V7-v1/00000/5279D224-7B81-E411-BCAA-002618943930.root'
-      '../../HcalAlCaRecoProducers/test/gjet.root'
     )
 )
 

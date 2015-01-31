@@ -3,7 +3,7 @@ import FWCore.ParameterSet.Config as cms
 # producer for alcadijets (HCAL gamma-jet)
 GammaJetProd = cms.EDProducer("AlCaGammaJetProducer",
                               PhoInput = cms.InputTag("photons"),
-                              PFjetInput = cms.InputTag("ak5PFJets"),
+                              PFjetInput = cms.InputTag("ak4PFJetsCHS"),
                               HBHEInput = cms.InputTag("hbhereco"),
                               HFInput = cms.InputTag("hfreco"),
                               HOInput = cms.InputTag("horeco"),

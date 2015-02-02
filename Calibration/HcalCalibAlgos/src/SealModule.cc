@@ -9,7 +9,7 @@
 #include "Calibration/HcalCalibAlgos/interface/HcalCalibrator.h"
 
 using cms::Analyzer_minbias;
-using cms::GammaJetAnalysis;
+//using cms::GammaJetAnalysis;
 //using cms::DiJetAnalyzer;
 using cms::HcalConstantsASCIIWriter;
 using cms::HitReCalibrator;

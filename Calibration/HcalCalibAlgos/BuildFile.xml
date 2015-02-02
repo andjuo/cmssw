@@ -28,4 +28,5 @@
 <use   name="TrackingTools/TrackAssociator"/>
 <use   name="CondFormats/L1TObjects"/>
 <use   name="JetMETCorrections/Objects"/>
+<use   name="HLTrigger/HLTcore"/>
 <flags   EDM_PLUGIN="1"/>

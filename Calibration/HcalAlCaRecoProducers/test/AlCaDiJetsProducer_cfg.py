@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
-process = cms.Process("MYDIJETS")
+process = cms.Process("MYGAMMAJET")
 
 process.load("Configuration.Geometry.GeometryIdeal_cff")
 process.load("Configuration.StandardSequences.MagneticField_cff")
@@ -12,24 +12,35 @@ process.options = cms.untracked.PSet(
     wantSummary = cms.untracked.bool(True)
 )
 
-process.load('FWCore.MessageService.MessageLogger_cfi')
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
-process.MessageLogger.cerr.FwkReport.reportEvery=cms.untracked.int32(1000)
-process.options = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
-
-process.source = cms.Source("PoolSource", fileNames = cms.untracked.vstring(
-        '/store/relval/CMSSW_7_3_0/RelValQCD_Pt_80_120_13/GEN-SIM-RECO/MCRUN2_73_V9_71XGENSIM_FIXGT-v1/00000/8E758AAA-4DA2-E411-8068-003048FFCB96.root',
-        '/store/relval/CMSSW_7_3_0/RelValQCD_Pt_80_120_13/GEN-SIM-RECO/MCRUN2_73_V9_71XGENSIM_FIXGT-v1/00000/CE0DAE28-56A2-E411-AEFF-003048FFD79C.root',
-        '/store/relval/CMSSW_7_3_0/RelValQCD_Pt_80_120_13/GEN-SIM-RECO/MCRUN2_73_V9_71XGENSIM_FIXGT-v1/00000/D4D21D16-56A2-E411-A0C4-0026189438E2.root'
-))
-
-process.load("Calibration.HcalAlCaRecoProducers.alcadijets_cfi")
-
-process.DiJetsRecos = cms.OutputModule("PoolOutputModule",
-#    outputCommands = cms.untracked.vstring('drop *', 
-#        'keep *_GammaJetProd_*_*'),
-    fileName = cms.untracked.string('dijets.root')
+process.maxEvents = cms.untracked.PSet(
+#    input = cms.untracked.int32(100)
+    input = cms.untracked.int32(-1)
+)
+process.source = cms.Source("PoolSource",
+    fileNames = 
+cms.untracked.vstring(
+   'file:/tmp/andriusj/522CE329-7B81-E411-B6C3-0025905A6110.root'
+#    '/store/relval/CMSSW_7_3_0/RelValPhotonJets_Pt_10_13/GEN-SIM-RECO/MCRUN2_73_V7-v1/00000/522CE329-7B81-E411-B6C3-0025905A6110.root',
+#    '/store/relval/CMSSW_7_3_0/RelValPhotonJets_Pt_10_13/GEN-SIM-RECO/MCRUN2_73_V7-v1/00000/5279D224-7B81-E411-BCAA-002618943930.root'
+ )
 )
 
-process.p = cms.Path(process.DiJetsProd)
-process.e = cms.EndPath(process.DiJetsRecos)
+process.load("Calibration.HcalAlCaRecoProducers.alcagammajet_cfi")
+
+process.GammaJetRecos = cms.OutputModule("PoolOutputModule",
+    outputCommands = cms.untracked.vstring('drop *',
+                 'keep recoPhotonCores_*_*_*',
+                 'keep recoSuperClusters_*_*_*',
+                 #'keep recoTracks_*_*_*',
+                 'keep recoTracks_generalTracks_*_*',
+                 #'keep *_PhotonIDProd_*_*',
+               'keep *_particleFlow_*_*',
+                                           'keep recoPFBlocks_particleFlowBlock_*_*',
+'keep recoPFClusters_*_*_*',
+#                                           'keep *_particleFlowPtrs_*_*',
+        'keep *_GammaJetProd_*_*'),
+    fileName = cms.untracked.string('gjet.root')
+)
+
+process.p = cms.Path(process.GammaJetProd)
+process.e = cms.EndPath(process.GammaJetRecos)

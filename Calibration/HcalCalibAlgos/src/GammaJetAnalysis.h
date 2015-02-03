@@ -61,6 +61,8 @@ class TTree;
 // class declarations
 //
 
+//namespace cms {
+
 class PhotonPair : protected std::pair<const reco::Photon*, double> {
 
 public:
@@ -174,6 +176,8 @@ private:
   edm::EDGetTokenT<edm::SortedCollection<HORecHit,edm::StrictWeakOrdering<HORecHit> > >     tok_HO_;
   edm::EDGetTokenT<edm::ValueMap<Bool_t> >          tok_loosePhoton_;
   edm::EDGetTokenT<edm::ValueMap<Bool_t> >          tok_tightPhoton_;
+  edm::EDGetTokenT<std::vector<Bool_t> >          tok_loosePhotonV_;
+  edm::EDGetTokenT<std::vector<Bool_t> >          tok_tightPhotonV_;
   edm::EDGetTokenT<reco::PFCandidateCollection>     tok_PFCand_;
   edm::EDGetTokenT<reco::VertexCollection>          tok_Vertex_;
   edm::EDGetTokenT<reco::GsfElectronCollection>     tok_GsfElec_;
@@ -186,7 +190,7 @@ private:
   edm::EDGetTokenT<edm::TriggerResults>             tok_TrigRes_;
   bool doPFJets_;                   // use PFJets
   bool doGenJets_;                  // use GenJets
-  bool workOnAOD_;
+  int  workOnAOD_;
   bool ignoreHLT_;
 
   // root file/histograms
@@ -320,5 +324,6 @@ private:
 
 };
 
+//}; // namespace cms
 
 #endif

@@ -61,8 +61,6 @@ class TTree;
 // class declarations
 //
 
-//namespace cms {
-
 class PhotonPair : protected std::pair<const reco::Photon*, double> {
 
 public:
@@ -321,9 +319,6 @@ private:
     }
   };
 
-
 };
-
-//}; // namespace cms
 
 #endif

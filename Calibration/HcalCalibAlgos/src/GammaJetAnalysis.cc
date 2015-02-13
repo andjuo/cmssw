@@ -21,11 +21,8 @@
 #include <map>
 #include <boost/regex.hpp>
 
-
-//using namespace cms;
-
 inline void HERE(const char *msg) {
-  if (0 && msg) std::cout << msg << std::endl;
+  if (0 && msg) edm::LogWarning("GammaJetAnalysis") << msg;
 }
 
 double getNeutralPVCorr(double eta, int intNPV, double area, bool isMC_) {
@@ -132,13 +129,12 @@ GammaJetAnalysis::GammaJetAnalysis(const edm::ParameterSet& iConfig) {
     tok_PFType1MET_  = consumes<reco::PFMETCollection>(pfType1METColl);
     tok_TrigRes_     = consumes<edm::TriggerResults>(edm::InputTag("TriggerResults::HLT"));
 
-  }
-  else {
+  } else {
     // FAST FIX
     const char* prod= "GammaJetProd";
     const char* an= "MYGAMMAJET";
-    std::cout << "FAST FIX: changing " << photonCollName_
-	      << " to" << edm::InputTag(prod,photonCollName_,an) << "\n";
+    edm::LogWarning("GammaJetAnalysis") << "FAST FIX: changing " << photonCollName_
+					<< " to" << edm::InputTag(prod,photonCollName_,an);
     tok_Photon_      = consumes<reco::PhotonCollection>(edm::InputTag(prod,photonCollName_,an));
     tok_PFJet_       = consumes<reco::PFJetCollection>(edm::InputTag(prod,pfJetCollName_,an));
     tok_GenJet_      = consumes<std::vector<reco::GenJet> >(edm::InputTag(prod,genJetCollName_,an));
@@ -402,7 +398,7 @@ void GammaJetAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     iEvent.getByToken(tok_GenJet_,genjets);
     if(!genjets.isValid()) {
       edm::LogWarning("GammaJetAnalysis") << "Could not find GenJet vector named "
-				       << genJetCollName_;
+					  << genJetCollName_;
       return;
     }
     nGenJets_= genjets->size();
@@ -496,7 +492,9 @@ void GammaJetAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
       edm::Ref<reco::PhotonCollection> photonRef(photons, photon_tag.idx());
       HERE(Form("got photon ref, photon_tag.idx()=%d",photon_tag.idx()));
+
       //std::cout << "loosePhotonQual->at(photon_tag.idx())=" << loosePhotonQual->at(photon_tag.idx()) << std::endl;
+
       tagPho_idLoose_ = (loosePhotonQual.isValid()) ? (*loosePhotonQual)[photonRef] : -1;
       tagPho_idTight_ = (tightPhotonQual.isValid()) ? (*tightPhotonQual)[photonRef] : -1;
     }
@@ -1929,4 +1927,5 @@ int GammaJetAnalysis::getEtaPhi(const HcalDetId id)
 
 
 //define this as a plug-in
+
 DEFINE_FWK_MODULE(GammaJetAnalysis);

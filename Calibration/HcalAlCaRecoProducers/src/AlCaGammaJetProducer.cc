@@ -40,13 +40,15 @@
 //namespace cms {
 
 class AlCaGammaJetProducer : public edm::EDProducer {
- public:
+
+public:
   explicit AlCaGammaJetProducer(const edm::ParameterSet&);
   ~AlCaGammaJetProducer();
   virtual void beginJob() ;
   virtual void produce(edm::Event &, const edm::EventSetup&);
   virtual void endJob();
- private:
+
+private:
   bool select (reco::PhotonCollection, reco::PFJetCollection);                                             
 
   // ----------member data ---------------------------
@@ -115,8 +117,6 @@ AlCaGammaJetProducer::AlCaGammaJetProducer(const edm::ParameterSet& iConfig) : n
   produces<edm::SortedCollection<HFRecHit,edm::StrictWeakOrdering<HFRecHit>>>(labelHF_.encode());
   produces<edm::SortedCollection<HORecHit,edm::StrictWeakOrdering<HORecHit>>>(labelHO_.encode());
   produces<edm::TriggerResults>(labelTrigger_.encode());
-  //produces<edm::ValueMap<Bool_t>>(labelLoosePhot_.encode());
-  //produces<edm::ValueMap<Bool_t>>(labelTightPhot_.encode());
   produces<std::vector<Bool_t>>(labelLoosePhot_.encode());
   produces<std::vector<Bool_t>>(labelTightPhot_.encode());
   produces<double>(labelRho_.encode());
@@ -274,8 +274,6 @@ void AlCaGammaJetProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
   std::auto_ptr<edm::TriggerResults> miniTriggerCollection(new edm::TriggerResults);
 
   std::auto_ptr<double> miniRhoCollection(new double);
-  //std::auto_ptr<edm::ValueMap<Bool_t> > miniLoosePhoton(new edm::ValueMap<Bool_t>());
-  //std::auto_ptr<edm::ValueMap<Bool_t> > miniTightPhoton(new edm::ValueMap<Bool_t>());
   std::auto_ptr<std::vector<Bool_t> > miniLoosePhoton(new std::vector<Bool_t>());
   std::auto_ptr<std::vector<Bool_t> > miniTightPhoton(new std::vector<Bool_t>());
 
@@ -344,10 +342,6 @@ void AlCaGammaJetProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
     edm::Handle<edm::ValueMap<Bool_t> > tightPhotonQual;
     iEvent.getByToken(tok_tightPhoton_, tightPhotonQual);
     if (loosePhotonQual.isValid() && tightPhotonQual.isValid()) {
-      // copy value map
-      //*miniLoosePhoton = *(loosePhotonQual.product());
-      //*miniTightPhoton = *(tightPhotonQual.product());
-
       miniLoosePhoton->reserve(miniPhotonCollection->size());
       miniTightPhoton->reserve(miniPhotonCollection->size());
       for (int iPho=0; iPho<int(miniPhotonCollection->size()); ++iPho) {

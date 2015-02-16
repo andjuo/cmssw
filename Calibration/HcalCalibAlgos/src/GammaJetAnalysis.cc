@@ -327,15 +327,15 @@ void GammaJetAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     const edm::TriggerNames &evTrigNames =iEvent.triggerNames(*triggerResults);
 
     if (debugHLTTrigNames>0) {
-      if (debug_>1)  LogDebug("GammaJetAnalysis") << "debugHLTTrigNames is on";
+      LogDebug("GammaJetAnalysis") << "debugHLTTrigNames is on";
       const std::vector<std::string> *trNames= & evTrigNames.triggerNames();
       for (size_t i=0; i<trNames->size(); ++i) {
-	if (trNames->at(i).find("_Photon")!=std::string::npos) {
-	  if (debug_>1) LogDebug("GammaJetAnalysis") << " - " << trNames->at(i);
-	}
+	int printIt=(debugHLTTrigNames==2) ? 1:0;
+	if (trNames->at(i).find("_Photon")!=std::string::npos) printIt=1;
+	if (printIt) LogDebug("GammaJetAnalysis") << " - " << trNames->at(i);
       }
-      if (debug_>1) LogDebug("GammaJetAnalysis") << " ";
-      debugHLTTrigNames--;
+      LogDebug("GammaJetAnalysis") << " ";
+      debugHLTTrigNames=0;
     }
 
     size_t id = 0;

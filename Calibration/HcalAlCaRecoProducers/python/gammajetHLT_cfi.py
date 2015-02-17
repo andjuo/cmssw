@@ -9,7 +9,7 @@ import HLTrigger.HLTfilters.hltHighLevel_cfi
 # https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideAlCaRecoTriggerBits
 
 gammajetHLT = HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.clone(
-    HLTPaths = ['HLT_L1SingleEG*','HLT_Photon*'],
+    HLTPaths = ['HLT_L1SingleEG*','HLT_Photon*','HLT_L1SingleJet*'],
 #   eventSetupPathsKey='HcalCalGammaJet',
     throw = False
 )

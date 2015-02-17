@@ -53,13 +53,14 @@ process.source = cms.Source("PoolSource",
                             fileNames = cms.untracked.vstring(
 #    '/store/relval/CMSSW_7_3_0/RelValPhotonJets_Pt_10_13/GEN-SIM-RECO/MCRUN2_73_V7-v1/00000/522CE329-7B81-E411-B6C3-0025905A6110.root',
 #    '/store/relval/CMSSW_7_3_0/RelValPhotonJets_Pt_10_13/GEN-SIM-RECO/MCRUN2_73_V7-v1/00000/5279D224-7B81-E411-BCAA-002618943930.root'
-      'file:../../HcalAlCaRecoProducers/test/gjet.root'
+#      'file:../../HcalAlCaRecoProducers/test/gjet.root'
+       'file:HcalCalGammaJet.root'
     )
 )
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 #process.MessageLogger.cerr.threshold = cms.untracked.string('DEBUG') # does not work?
-process.MessageLogger.cerr.FwkReport.reportEvery=cms.untracked.int32(500)
+process.MessageLogger.cerr.FwkReport.reportEvery=cms.untracked.int32(1)
 process.MessageLogger.cerr.FwkReport.reportEvery=cms.untracked.int32(1)
 process.options = cms.untracked.PSet( wantSummary = cms.untracked.bool(False) )
 
@@ -77,9 +78,10 @@ process.options = cms.untracked.PSet( wantSummary = cms.untracked.bool(False) )
 process.GammaJetAnalysis.workOnAOD = cms.int32(2)
 process.GammaJetAnalysis.doGenJets = cms.bool(False)
 process.GammaJetAnalysis.debug = cms.untracked.int32(1)
+process.GammaJetAnalysis.debugHLTTrigNames = cms.untracked.int32(2)
+#process.GammaJetAnalysis.allowNoPhoton = cms.bool(True)
+process.GammaJetAnalysis.prodProcess = cms.untracked.string('USER')
 
 process.p = cms.Path(
-#    process.PF2PAT
-#    +process.ak5PFJetsCHS
     process.GammaJetAnalysis
 )

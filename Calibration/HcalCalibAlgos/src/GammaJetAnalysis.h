@@ -152,6 +152,10 @@ private:
   std::string hoRecHitName_;        // label for HORecHit collection
   std::string rootHistFilename_;    // name of the histogram file
   std::string pvCollName_;          // label for primary vertex collection
+  std::string offlineBSName_;       // name of offline beam-spot
+  std::string conversionCollName_;  // name of conversions collection
+  std::string electronCollName_;    // electron collection name
+  edm::InputTag photonIDTightCollName_, photonIDLooseCollName_; // photon ID
   std::string prodProcess_;         // the producer process for AOD=2
 
   bool allowNoPhoton_; // whether module is used for dijet analysis
@@ -178,12 +182,11 @@ private:
   edm::EDGetTokenT<std::vector<Bool_t> >          tok_loosePhotonV_;
   edm::EDGetTokenT<std::vector<Bool_t> >          tok_tightPhotonV_;
   edm::EDGetTokenT<reco::PFCandidateCollection>     tok_PFCand_;
-  edm::EDGetTokenT<reco::VertexCollection>          tok_Vertex_;
+  edm::EDGetTokenT<reco::VertexCollection>          tok_PV_;
   edm::EDGetTokenT<reco::GsfElectronCollection>     tok_GsfElec_;
   edm::EDGetTokenT<double>                          tok_Rho_;
   edm::EDGetTokenT<reco::ConversionCollection>      tok_Conv_;
   edm::EDGetTokenT<reco::BeamSpot>                  tok_BS_;
-  edm::EDGetTokenT<std::vector<reco::Vertex> >      tok_PV_;
   edm::EDGetTokenT<reco::PFMETCollection>           tok_PFMET_;
   edm::EDGetTokenT<reco::PFMETCollection>           tok_PFType1MET_;
   edm::EDGetTokenT<edm::TriggerResults>             tok_TrigRes_;
@@ -194,6 +197,8 @@ private:
 
   // root file/histograms
   TFile* rootfile_;
+  TH1D  *hJet1Pt, *hJet2Pt, *hJet3Pt;
+  TH1D  *hJet1PtOrd, *hJet2PtOrd, *hJet3PtOrd;
 
   TTree* misc_tree_; // misc.information. Will be filled only once
   TTree* calo_tree_;
@@ -211,7 +216,7 @@ private:
   float eventWeight_, eventPtHat_;
   int nPhotons_, nGenJets_;
   int nPFJets_;
-  ULong64_t nProcessed_;
+  ULong64_t nProcessed_,nSelected_;
   int pf_NPV_;
 
   /// MET info 

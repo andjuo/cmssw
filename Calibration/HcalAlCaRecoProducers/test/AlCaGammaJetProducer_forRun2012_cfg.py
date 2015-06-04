@@ -24,7 +24,8 @@ process.source = cms.Source("PoolSource",
 cms.untracked.vstring(
 #   'file:/tmp/andriusj/6EC8FCC8-E2A8-E411-9506-002590596468.root'
 #        '/store/relval/CMSSW_7_4_0_pre6/RelValPhotonJets_Pt_10_13/GEN-SIM-RECO/MCRUN2_74_V1-v1/00000/6EC8FCC8-E2A8-E411-9506-002590596468.root'
-    'file:/tmp/andriusj/Run2012A_Photon_22Jan2013-002618943913.root'
+#    'file:/tmp/andriusj/Run2012A_Photon_22Jan2013-002618943913.root'
+        '/store/group/dpg_hcal/comm_hcal/gammaJet/temp_Summer12_DR53X/Run2012A_Photon_22Jan2013-002618943913.root'
  )
 )
 

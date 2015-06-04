@@ -8,6 +8,9 @@ process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 from Configuration.AlCa.autoCond import autoCond
 process.GlobalTag.globaltag=autoCond['startup']
 
+process.load('FWCore.MessageService.MessageLogger_cfi')
+process.MessageLogger.cerr.FwkReport.reportEvery=cms.untracked.int32(1000)
+
 process.options = cms.untracked.PSet(
     wantSummary = cms.untracked.bool(True)
 )

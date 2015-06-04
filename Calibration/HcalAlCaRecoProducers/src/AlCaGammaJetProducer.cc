@@ -47,7 +47,7 @@ public:
   virtual void endJob();
 
 private:
-  bool select (reco::PhotonCollection, reco::PFJetCollection);                                             
+  bool select(const reco::PhotonCollection&, const reco::PFJetCollection&);
 
   // ----------member data ---------------------------
   
@@ -135,12 +135,28 @@ void AlCaGammaJetProducer::endJob() {
   edm::LogInfo("AlcaGammaJet") << "Accepts " << nSelect_ << " events from a total of " << nAll_ << " events";
 }
 
-bool AlCaGammaJetProducer::select (reco::PhotonCollection ph, reco::PFJetCollection jt) {
- 
+bool AlCaGammaJetProducer::select (const reco::PhotonCollection &ph, const reco::PFJetCollection &jt) {
+
   if (jt.size()<1) return false;
   if (ph.size()<1) return false;
-  if (((jt.at(0)).pt())<minPtJet_)    return false;
-  if (((ph.at(0)).pt())<minPtPhoton_) return false;
+  // Check the requirement for minimum pT
+  // Assume ordered collections, but make no assumption about the direction
+  if ((jt.begin()->pt() < minPtJet_) && (jt.back().pt() < minPtJet_)) {
+    int found=0;
+    for (reco::PFJetCollection::const_iterator it= jt.begin()+1;
+	 !found && (it!=jt.end()); it++) {
+      if (it->pt() >= minPtJet_) found=1;
+    }
+    if (!found) return false;
+  }
+  if ((ph.begin()->pt() < minPtPhoton_) && (ph.back().pt() < minPtPhoton_)) {
+    int found=0;
+    for (reco::PhotonCollection::const_iterator it= ph.begin()+1;
+	 !found && (it!=ph.end()); it++) {
+      if (it->pt() >= minPtPhoton_) found=1;
+    }
+    if (!found) return false;
+  }
   return true;
 }
 // ------------ method called to produce the data  ------------

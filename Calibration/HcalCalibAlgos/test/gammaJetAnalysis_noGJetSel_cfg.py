@@ -1,6 +1,10 @@
 import FWCore.ParameterSet.Config as cms
 process = cms.Process('ANALYSIS')
 
+# The purpose of this macro is to check gammaJetAnalysis_cfg.py output
+# reading the input files directly, not through GammaJetSelector.
+# It is for convenience of use.
+
 process.load('Configuration.StandardSequences.Services_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
@@ -44,7 +48,7 @@ process.load('Calibration.HcalCalibAlgos.gammaJetAnalysis_cfi')
 process.load('JetMETCorrections.Configuration.JetCorrectionProducers_cff')
 
 # run over files
-process.GammaJetAnalysis.rootHistFilename = cms.string('PhoJet_tree_CHS.root')
+process.GammaJetAnalysis.rootHistFilename = cms.string('PhoJet_tree_CHS_noGJetSel.root')
 process.GammaJetAnalysis.doPFJets = cms.bool(True)
 process.GammaJetAnalysis.doGenJets = cms.bool(True)
 
@@ -66,18 +70,18 @@ process.GammaJetAnalysis.photonTriggers += cms.vstring(
 
 # a clone without CHS
 process.GammaJetAnalysis_noCHS= process.GammaJetAnalysis.clone()
-process.GammaJetAnalysis_noCHS.rootHistFilename = cms.string('PhoJet_tree_nonCHS.root')
+process.GammaJetAnalysis_noCHS.rootHistFilename = cms.string('PhoJet_tree_nonCHS_noGJetSel.root')
 # for 7XY use ak4* instead of ak5
 process.GammaJetAnalysis_noCHS.pfJetCollName = cms.string('ak4PFJets')
 process.GammaJetAnalysis_noCHS.pfJetCorrName = cms.string('ak4PFL2L3')
 
 process.source = cms.Source("PoolSource", 
                             fileNames = cms.untracked.vstring(
-        'file:../../HcalAlCaRecoProducers/test/gjet.root'
+#        'file:../../HcalAlCaRecoProducers/test/gjet.root'
 #   'file:/tmp/andriusj/6EC8FCC8-E2A8-E411-9506-002590596468.root'
 #        '/store/relval/CMSSW_7_4_0_pre6/RelValPhotonJets_Pt_10_13/GEN-SIM-RECOMCRUN2_74_V1-v1/00000/6EC8FCC8-E2A8-E411-9506-002590596468.root'
-#        'file:/tmp/andriusj/FileA_468.root',
-#        'file:/tmp/andriusj/FileB_0D6.root'
+        'file:/tmp/andriusj/FileA_468.root',
+        'file:/tmp/andriusj/FileB_0D6.root'
     )
 )
 
@@ -92,13 +96,13 @@ process.options = cms.untracked.PSet( wantSummary = cms.untracked.bool(False) )
 
 # specify 'workOnAOD=1' if the input file is AOD, otherwise put 0
 process.GammaJetAnalysis.workOnAOD = cms.int32(0)
-process.GammaJetAnalysis.doGenJets = cms.bool(False)
+process.GammaJetAnalysis.doGenJets = cms.bool(True)
 process.GammaJetAnalysis.debug     = cms.untracked.int32(0)
 
-#process.egmPhotonIDSequence.remove('photonMVAValueMapProducer')
+process.egmPhotonIDSequence.remove('photonMVAValueMapProducer')
 
 process.p = cms.Path(
-#    process.photonIDValueMapProducer *
+    process.photonIDValueMapProducer *
     process.egmPhotonIDs *
     process.GammaJetAnalysis
 )

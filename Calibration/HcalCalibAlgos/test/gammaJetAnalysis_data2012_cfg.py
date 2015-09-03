@@ -56,10 +56,8 @@ process.GammaJetAnalysis.electronCollName= cms.string("gsfElectrons")
 process.GammaJetAnalysis.photonIdLooseName= cms.InputTag("PhotonIDProd","PhotonCutBasedIDLoose")
 process.GammaJetAnalysis.photonIdTightName= cms.InputTag("PhotonIDProd","PhotonCutBasedIDTight")
 
-# name of the process that used the GammaJetProd producer
-process.GammaJetAnalysis.prodProcess = cms.untracked.string('MYGAMMAJET')
-# specify 'workOnAOD=2' to apply tokens from GammaJetProd producer
-process.GammaJetAnalysis.workOnAOD = cms.int32(2)
+# specify 'workOnAOD=1' if the input file is AOD, otherwise put 0
+process.GammaJetAnalysis.workOnAOD = cms.int32(0)
 process.GammaJetAnalysis.doGenJets = cms.bool(False)
 process.GammaJetAnalysis.debug     = cms.untracked.int32(0)
 

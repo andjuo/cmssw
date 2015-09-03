@@ -126,6 +126,20 @@ public:
 
   std::vector<float> pfTkIsoWithVertex(const reco::Photon* localPho1, edm::Handle<reco::PFCandidateCollection> pfHandle, edm::Handle<reco::VertexCollection> vtxHandle, float dRmax, float dRvetoBarrel, float dRvetoEndcap, float ptMin, float dzMax, float dxyMax, reco::PFCandidate::ParticleType pfToUse);
 
+  // borrowed from https://github.com/ikrav/ElectronWork/blob/master/ElectronNtupler/plugins/PhotonNtuplerMVADemoMiniAOD.cc
+  enum TPhotonMatchType_t { UNMATCHED = 0,
+			    MATCHED_FROM_GUDSCB,
+			    MATCHED_FROM_PI0,
+			    MATCHED_FROM_OTHER_SOURCES };
+
+  int matchToTruth(const reco::Photon &pho,
+   const edm::Handle<std::vector<reco::GenParticle>>  &genParticles);
+  int matchToTruthAlternative(const reco::Photon &pho,
+      const edm::Handle<std::vector<reco::GenParticle>>  &genParticles);
+  void findFirstNonPhotonMother(const reco::Candidate *particle,
+				int &ancestorPID, int &ancestorStatus);
+
+
 private:
   virtual void beginJob();//(const edm::EventSetup&);
   virtual void analyze(const edm::Event&, const edm::EventSetup&);
@@ -152,7 +166,14 @@ private:
   std::string hoRecHitName_;        // label for HORecHit collection
   std::string rootHistFilename_;    // name of the histogram file
   std::string pvCollName_;          // label for primary vertex collection
-  std::string prodProcess_;         // the producer process for AOD=2
+  std::string offlineBSName_;       // name of offline beam-spot
+  std::string conversionCollName_;  // name of conversions collection
+  std::string electronCollName_;    // electron collection name
+  edm::InputTag photonIDTightCollName_, photonIDLooseCollName_; // photon ID. Obsolete
+  edm::InputTag photonRun2IdTightCollName_, photonRun2IdMediumCollName_,
+    photonRun2IdLooseCollName_; // photon ID for Run2 from official tools
+  edm::InputTag egmPhoChIsoMap_, egmPhoNhIsoMap_, egmPhoPhIsoMap_;
+  edm::FileInPath egmEffAreasChConfigFile_, egmEffAreasNhConfigFile_, egmEffAreasPhConfigFile_;
 
   bool allowNoPhoton_; // whether module is used for dijet analysis
   double photonPtMin_;   // lowest value of the leading photon pT
@@ -175,15 +196,20 @@ private:
   edm::EDGetTokenT<edm::SortedCollection<HORecHit,edm::StrictWeakOrdering<HORecHit> > >     tok_HO_;
   edm::EDGetTokenT<edm::ValueMap<Bool_t> >          tok_loosePhoton_;
   edm::EDGetTokenT<edm::ValueMap<Bool_t> >          tok_tightPhoton_;
-  edm::EDGetTokenT<std::vector<Bool_t> >          tok_loosePhotonV_;
-  edm::EDGetTokenT<std::vector<Bool_t> >          tok_tightPhotonV_;
+  //edm::EDGetTokenT<std::vector<Bool_t> >          tok_loosePhotonV_; //no longer needed
+  //edm::EDGetTokenT<std::vector<Bool_t> >          tok_tightPhotonV_; //no longer needed
+  edm::EDGetTokenT<edm::ValueMap<Bool_t> >          tok_run2LooseId_;
+  edm::EDGetTokenT<edm::ValueMap<Bool_t> >          tok_run2MediumId_;
+  edm::EDGetTokenT<edm::ValueMap<Bool_t> >          tok_run2TightId_;
+  edm::EDGetTokenT<edm::ValueMap<float> >           tok_egmPhoChIso_; // not EA-corrected
+  edm::EDGetTokenT<edm::ValueMap<float> >           tok_egmPhoNhIso_;
+  edm::EDGetTokenT<edm::ValueMap<float> >           tok_egmPhoPhIso_;
   edm::EDGetTokenT<reco::PFCandidateCollection>     tok_PFCand_;
-  edm::EDGetTokenT<reco::VertexCollection>          tok_Vertex_;
+  edm::EDGetTokenT<reco::VertexCollection>          tok_PV_;
   edm::EDGetTokenT<reco::GsfElectronCollection>     tok_GsfElec_;
   edm::EDGetTokenT<double>                          tok_Rho_;
   edm::EDGetTokenT<reco::ConversionCollection>      tok_Conv_;
   edm::EDGetTokenT<reco::BeamSpot>                  tok_BS_;
-  edm::EDGetTokenT<std::vector<reco::Vertex> >      tok_PV_;
   edm::EDGetTokenT<reco::PFMETCollection>           tok_PFMET_;
   edm::EDGetTokenT<reco::PFMETCollection>           tok_PFType1MET_;
   edm::EDGetTokenT<edm::TriggerResults>             tok_TrigRes_;
@@ -194,6 +220,8 @@ private:
 
   // root file/histograms
   TFile* rootfile_;
+  TH1D  *hJet1Pt, *hJet2Pt, *hJet3Pt;
+  TH1D  *hJet1PtOrd, *hJet2PtOrd, *hJet3PtOrd;
 
   TTree* misc_tree_; // misc.information. Will be filled only once
   TTree* calo_tree_;
@@ -211,7 +239,7 @@ private:
   float eventWeight_, eventPtHat_;
   int nPhotons_, nGenJets_;
   int nPFJets_;
-  ULong64_t nProcessed_;
+  ULong64_t nProcessed_,nSelected_,nSelectedLoosePhotonID_;
   int pf_NPV_;
 
   /// MET info 
@@ -223,12 +251,22 @@ private:
   float tagPho_pt_, pho_2nd_pt_, tagPho_energy_, tagPho_eta_, tagPho_phi_, tagPho_sieie_;
   float tagPho_HoE_, tagPho_r9_, tagPho_EcalIsoDR04_, tagPho_HcalIsoDR04_, tagPho_HcalIsoDR0412_, tagPho_TrkIsoHollowDR04_, tagPho_pfiso_myphoton03_;
   float tagPho_pfiso_myneutral03_;
-  std::vector<std::vector<float> >  tagPho_pfiso_mycharged03 ;
+  std::vector<std::vector<float> >  tagPho_pfiso_mycharged03v_ ;
+  float tagPho_pfiso_mycharged03_;
+  float tagPho_full5x5sigmaIetaIeta_;
+  float tagPho_egmChIso_, tagPho_egmNhIso_, tagPho_egmPhIso_; // isolation from official tools
   int tagPho_pixelSeed_;
   int tagPho_ConvSafeEleVeto_;
   int tagPho_idTight_, tagPho_idLoose_;
+
+  // photonID flag based on info from the official tools for Run2 cut-based photonID
+  // Values:
+  //   -1 - not determined, 0 - fails looseID, 1 - looseID, 2 - mediumID, 3 -tightID
+  int tagPho_idRun2flag_;
+
   float tagPho_genPt_, tagPho_genEnergy_, tagPho_genEta_, tagPho_genPhi_;
   float tagPho_genDeltaR_;
+  int tagPho_isTrue_, tagPho_isTrueAlternative_;
 
   // Particle-flow jets
   // leading Et jet info
@@ -319,6 +357,15 @@ private:
       return ( (a.photon()->pt()) > (b.photon()->pt()) );
     }
   };
+
+  // method cloned from
+  // constructor from RecoEgamma/EgammaTools/src/EffectiveAreas.cc
+  // EffectiveAreas define the vectors as private members
+  int loadEffectiveAreas(const std::string &filename,
+			 std::vector<float> &absEtaMinV,
+			 std::vector<float> &absEtaMaxV,
+			 std::vector<float> &effAreaV);
+
 
 };
 

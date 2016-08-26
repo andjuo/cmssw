@@ -23,16 +23,52 @@ SimpleElectron::SimpleElectron(const reco::GsfElectron &in, unsigned int runNumb
 {
 }
 
+std::ostream& operator<<(std::ostream& out, const math::XYZTLorentzVector &v)
+{
+  out << "(" << v.Pt() << ", " << v.Eta() << ", " << v.Phi() << " " << v.Energy() << ")";
+  return out;
+}
 
-void SimpleElectron::writeTo(reco::GsfElectron & out) const 
+
+void SimpleElectron::writeTo(reco::GsfElectron & out, int debug) const 
 {
     math::XYZTLorentzVector oldMomentum = out.p4();
     math::XYZTLorentzVector newMomentum = math::XYZTLorentzVector(oldMomentum.x()*getCombinedMomentum()/oldMomentum.t(),
                                                                   oldMomentum.y()*getCombinedMomentum()/oldMomentum.t(),
                                                                   oldMomentum.z()*getCombinedMomentum()/oldMomentum.t(),
                                                                   getCombinedMomentum());
+    if (debug) std::cout << "set " << oldMomentum << " to " << newMomentum << " (scale=" << getCombinedMomentum()/oldMomentum.t() << ")\n";
     out.setCorrectedEcalEnergy(getNewEnergy());
     out.setCorrectedEcalEnergyError(getNewEnergyError());
     out.correctMomentum(newMomentum, getTrackerMomentumError(), getCombinedMomentumError());
 }
 #endif
+
+
+std::ostream& operator<<(std::ostream &out, const SimpleElectron *e)
+{
+  out << e->run_ << " " << e->eClass_ << " " << e->r9_ << " "
+      << e->scEnergy_ << " " << e->scEnergyError_ << " "
+      << e->trackMomentum_ << " " << e->trackMomentumError_ << " "
+      << e->regEnergy_ << " " << e->regEnergyError_ << " "
+      << e->eta_ << " " << e->isEB_ << " " << e->isMC_ << " "
+      << e->isEcalDriven_ << " " << e->isTrackerDriven_ << " "
+      << e->newEnergy_ << " " << e->newEnergyError_ << " "
+      << e->combinedMomentum_ << " " << e->combinedMomentumError_ << " "
+      << e->scale_ << " " << e->smearing_ << " " << e->correction_;
+  return out;
+}
+
+std::istream& operator>>(std::istream &inp, const SimpleElectron *e)
+{
+  inp >> e->run_ >> " " >> e->eClass_ >> " " >> e->r9_ >> " "
+      >> e->scEnergy_ >> " " >> e->scEnergyError_ >> " "
+      >> e->trackMomentum_ >> " " >> e->trackMomentumError_ >> " "
+      >> e->regEnergy_ >> " " >> e->regEnergyError_ >> " "
+      >> e->eta_ >> " " >> e->isEB_ >> " " >> e->isMC_ >> " "
+      >> e->isEcalDriven_ >> " " >> e->isTrackerDriven_ >> " "
+      >> e->newEnergy_ >> " " >> e->newEnergyError_ >> " "
+      >> e->combinedMomentum_ >> " " >> e->combinedMomentumError_ >> " "
+      >> e->scale_ >> " " >> e->smearing_ >>  " " << e->correction_;
+  return inp;
+}

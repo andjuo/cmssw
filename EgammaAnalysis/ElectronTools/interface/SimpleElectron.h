@@ -5,6 +5,8 @@
 #include "DataFormats/EgammaCandidates/interface/GsfElectron.h"        
 #endif
 
+#include <iostream>
+
 class SimpleElectron
 {
 	public:
@@ -44,13 +46,13 @@ class SimpleElectron
                         newEnergyError_(regEnergyError_),
                         combinedMomentum_(combinedMomentum), 
                         combinedMomentumError_(combinedMomentumError),
-                        scale_(1.0), smearing_(0.0)
+			scale_(1.0), smearing_(0.0), correction_(1.0)
         {}
 	    ~SimpleElectron(){}	
 
 #ifndef SimpleElectron_STANDALONE
         explicit SimpleElectron(const reco::GsfElectron &in, unsigned int runNumber, bool isMC) ;
-        void writeTo(reco::GsfElectron & out) const ;
+        void writeTo(reco::GsfElectron & out, int debug=0) const ;
 #endif
 
     	//accessors
@@ -59,7 +61,11 @@ class SimpleElectron
     	double getCombinedMomentum() const {return combinedMomentum_;}
     	double getCombinedMomentumError() const {return combinedMomentumError_;}
     	double getScale() const {return scale_;}
+	void setScale(double val) {scale_=val;}
     	double getSmearing() const {return smearing_;}
+	void setSmearing(double val) {smearing_=val;}
+	double getCorrection() const {return correction_;}
+	void setCorrection(double val) {correction_=val;}
     	double getSCEnergy() const {return scEnergy_;}
     	double getSCEnergyError() const {return scEnergyError_;}
     	double getRegEnergy() const {return regEnergy_;}
@@ -102,6 +108,14 @@ class SimpleElectron
         double combinedMomentumError_;
     	double scale_; 
         double smearing_;
+	double correction_;
+
+ public:
+	friend std::ostream& operator<<(std::ostream &out, const SimpleElectron *e);
+	friend std::istream& operator>>(std::istream &in, SimpleElectron &e);
+
+	std::ostream& operator<<(std::ostream& out, const SimpleElectron &e)
+	  { out << (&e); return out; }
 };
 
 #endif

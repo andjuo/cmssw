@@ -40,7 +40,7 @@ CalibratedElectronProducerRun2T<T>::CalibratedElectronProducerRun2T( const edm::
   theElectronToken(consumes<edm::View<T> >(conf.getParameter<edm::InputTag>("electrons"))),
   theGBRForestName(conf.getParameter<std::string>("gbrForestName")),
   theEpCombinationTool(),
-  theEnCorrectorRun2(theEpCombinationTool, conf.getParameter<bool>("isMC"), conf.getParameter<bool>("isSynchronization"), conf.getParameter<std::string>("correctionFile"))
+  theEnCorrectorRun2(theEpCombinationTool, conf.getParameter<bool>("isMC"), conf.getParameter<bool>("isSynchronization"), conf.getParameter<std::string>("correctionFile"),3) // debug 1 - print uncorr/corr ele; 2 - use ele correction (in addition to "1"); 3 - also check the write-out values
 {
   produces<std::vector<T> >();
 }

@@ -16,7 +16,7 @@ class ElectronEnergyCalibratorRun2 {
   ElectronEnergyCalibratorRun2() {}
   
   // further configuration will be added when we will learn how it will work
-  ElectronEnergyCalibratorRun2(EpCombinationTool &combinator, bool isMC, bool synchronization, std::string); 
+  ElectronEnergyCalibratorRun2(EpCombinationTool &combinator, bool isMC, bool synchronization, std::string, int setDebugLevel=0); 
   ~ElectronEnergyCalibratorRun2() ;
   
   /// Initialize with a random number generator (if not done, it will use the CMSSW service)
@@ -36,6 +36,7 @@ class ElectronEnergyCalibratorRun2 {
   EpCombinationTool *epCombinationTool_;
   bool isMC_, synchronization_;
   TRandom *rng_;
+  int debugLevel;
   
   /// Return a number distributed as a unit gaussian, drawn from the private RNG if initPrivateRng was called, 
   /// or from the CMSSW RandomNumberGenerator service

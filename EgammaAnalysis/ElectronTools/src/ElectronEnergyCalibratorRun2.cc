@@ -1,3 +1,4 @@
+
 #include "EgammaAnalysis/ElectronTools/interface/ElectronEnergyCalibratorRun2.h"
 #include <CLHEP/Random/RandGaussQ.h>
 #include "FWCore/ServiceRegistry/interface/Service.h"
@@ -7,10 +8,12 @@
 ElectronEnergyCalibratorRun2::ElectronEnergyCalibratorRun2(EpCombinationTool &combinator, 
 							   bool isMC, 
 							   bool synchronization, 
-							   std::string correctionFile
+							   std::string correctionFile,
+							   int setDebugLevel
 							   ) :
   epCombinationTool_(&combinator),
   isMC_(isMC), synchronization_(synchronization),
+  debugLevel(setDebugLevel),
   rng_(0),
   _correctionRetriever(correctionFile) // here is opening the files and reading the corrections
 {
@@ -34,9 +37,12 @@ void ElectronEnergyCalibratorRun2::initPrivateRng(TRandom *rnd)
 void ElectronEnergyCalibratorRun2::calibrate(reco::GsfElectron &electron, unsigned int runNumber, edm::StreamID const &id) const
 {
   SimpleElectron simple(electron, runNumber, isMC_);
+  if (debugLevel_) std::cout << "update     " << simple << "\n";
   calibrate(simple, id);
-  simple.writeTo(electron);
+  if (debugLevel_) std::cout << "calibrated " << simple << "\n";
+  simple.writeTo(electron,(debugLevel_==3) ? 1:0);
 }
+
 void ElectronEnergyCalibratorRun2::calibrate(SimpleElectron &electron, edm::StreamID const & id) const 
 {
   assert(isMC_ == electron.isMC());
@@ -46,18 +52,31 @@ void ElectronEnergyCalibratorRun2::calibrate(SimpleElectron &electron, edm::Stre
   
   scale = _correctionRetriever.ScaleCorrection(electron.getRunNumber(), electron.isEB(), electron.getR9(), aeta, et);
   smear = _correctionRetriever.getSmearingSigma(electron.getRunNumber(), electron.isEB(), electron.getR9(), aeta, et, 0., 0.); 
-  
+
   double newEcalEnergy, newEcalEnergyError;
+  if (debugLevel_==2) {
+    double corr=electron.getCorrection();
+    std::cout << "using electron.corr=" << corr << "\n";
+    newEcalEnergy      = electron.getNewEnergy() * corr;
+    newEcalEnergyError = std::hypot(electron.getNewEnergyError() * corr, smear * newEcalEnergy);
+  }
+  else {
   if (isMC_) {
     double corr = 1.0 + smear * gauss(id);
+    electron.setSmearing(smear);
+    electron.setCorrection(corr);
     newEcalEnergy      = electron.getNewEnergy() * corr;
     newEcalEnergyError = std::hypot(electron.getNewEnergyError() * corr, smear * newEcalEnergy);
   } else {
+    electron.setScale(scale);
+    electron.setCorrection(corr);
     newEcalEnergy      = electron.getNewEnergy() * scale;
     newEcalEnergyError = std::hypot(electron.getNewEnergyError() * scale, smear * newEcalEnergy);
   }
+  }
+
   electron.setNewEnergy(newEcalEnergy); 
-  electron.setNewEnergyError(newEcalEnergyError); 
+  electron.setNewEnergyError(newEcalEnergyError);
   epCombinationTool_->combine(electron);
 }
 

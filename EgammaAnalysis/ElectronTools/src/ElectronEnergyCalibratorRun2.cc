@@ -13,8 +13,8 @@ ElectronEnergyCalibratorRun2::ElectronEnergyCalibratorRun2(EpCombinationTool &co
 							   ) :
   epCombinationTool_(&combinator),
   isMC_(isMC), synchronization_(synchronization),
-  debugLevel(setDebugLevel),
   rng_(0),
+  debugLevel(setDebugLevel),
   _correctionRetriever(correctionFile) // here is opening the files and reading the corrections
 {
   if(isMC_) {
@@ -37,10 +37,10 @@ void ElectronEnergyCalibratorRun2::initPrivateRng(TRandom *rnd)
 void ElectronEnergyCalibratorRun2::calibrate(reco::GsfElectron &electron, unsigned int runNumber, edm::StreamID const &id) const
 {
   SimpleElectron simple(electron, runNumber, isMC_);
-  if (debugLevel_) std::cout << "update     " << simple << "\n";
+  if (debugLevel) std::cout << "update     " << simple << "\n";
   calibrate(simple, id);
-  if (debugLevel_) std::cout << "calibrated " << simple << "\n";
-  simple.writeTo(electron,(debugLevel_==3) ? 1:0);
+  if (debugLevel) std::cout << "calibrated " << simple << "\n";
+  simple.writeTo(electron,(debugLevel==3) ? 1:0);
 }
 
 void ElectronEnergyCalibratorRun2::calibrate(SimpleElectron &electron, edm::StreamID const & id) const 
@@ -54,7 +54,7 @@ void ElectronEnergyCalibratorRun2::calibrate(SimpleElectron &electron, edm::Stre
   smear = _correctionRetriever.getSmearingSigma(electron.getRunNumber(), electron.isEB(), electron.getR9(), aeta, et, 0., 0.); 
 
   double newEcalEnergy, newEcalEnergyError;
-  if (debugLevel_==2) {
+  if (debugLevel==2) {
     double corr=electron.getCorrection();
     std::cout << "using electron.corr=" << corr << "\n";
     newEcalEnergy      = electron.getNewEnergy() * corr;
@@ -69,7 +69,7 @@ void ElectronEnergyCalibratorRun2::calibrate(SimpleElectron &electron, edm::Stre
     newEcalEnergyError = std::hypot(electron.getNewEnergyError() * corr, smear * newEcalEnergy);
   } else {
     electron.setScale(scale);
-    electron.setCorrection(corr);
+    electron.setCorrection(scale);
     newEcalEnergy      = electron.getNewEnergy() * scale;
     newEcalEnergyError = std::hypot(electron.getNewEnergyError() * scale, smear * newEcalEnergy);
   }

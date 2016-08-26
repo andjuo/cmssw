@@ -111,10 +111,13 @@ class SimpleElectron
 	double correction_;
 
  public:
-	friend std::ostream& operator<<(std::ostream &out, const SimpleElectron *e);
-	friend std::istream& operator>>(std::istream &in, SimpleElectron &e);
+	int read(std::istream& inp);
 
-	std::ostream& operator<<(std::ostream& out, const SimpleElectron &e)
+	friend std::ostream& operator<<(std::ostream &out, const SimpleElectron *e);
+	friend std::istream& operator>>(std::istream &inp, SimpleElectron &e)
+	  { e.read(inp); return inp; }
+
+	friend std::ostream& operator<<(std::ostream& out, const SimpleElectron &e)
 	  { out << (&e); return out; }
 };
 

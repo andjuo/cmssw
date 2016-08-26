@@ -25,7 +25,7 @@ SimpleElectron::SimpleElectron(const reco::GsfElectron &in, unsigned int runNumb
 
 std::ostream& operator<<(std::ostream& out, const math::XYZTLorentzVector &v)
 {
-  out << "(" << v.Pt() << ", " << v.Eta() << ", " << v.Phi() << " " << v.Energy() << ")";
+  out << "(" << v.Pt() << ", " << v.Eta() << ", " << v.Phi() << " " << v.E() << ")";
   return out;
 }
 
@@ -59,16 +59,16 @@ std::ostream& operator<<(std::ostream &out, const SimpleElectron *e)
   return out;
 }
 
-std::istream& operator>>(std::istream &inp, const SimpleElectron *e)
+int SimpleElectron::read(std::istream &inp)
 {
-  inp >> e->run_ >> " " >> e->eClass_ >> " " >> e->r9_ >> " "
-      >> e->scEnergy_ >> " " >> e->scEnergyError_ >> " "
-      >> e->trackMomentum_ >> " " >> e->trackMomentumError_ >> " "
-      >> e->regEnergy_ >> " " >> e->regEnergyError_ >> " "
-      >> e->eta_ >> " " >> e->isEB_ >> " " >> e->isMC_ >> " "
-      >> e->isEcalDriven_ >> " " >> e->isTrackerDriven_ >> " "
-      >> e->newEnergy_ >> " " >> e->newEnergyError_ >> " "
-      >> e->combinedMomentum_ >> " " >> e->combinedMomentumError_ >> " "
-      >> e->scale_ >> " " >> e->smearing_ >>  " " << e->correction_;
-  return inp;
+  inp >> run_ >> eClass_ >> r9_
+      >> scEnergy_ >> scEnergyError_
+      >> trackMomentum_ >> trackMomentumError_
+      >> regEnergy_ >> regEnergyError_
+      >> eta_ >> isEB_ >> isMC_
+      >> isEcalDriven_ >> isTrackerDriven_
+      >> newEnergy_ >> newEnergyError_
+      >> combinedMomentum_ >> combinedMomentumError_
+      >> scale_ >> smearing_ >> correction_;
+  return 1;
 }

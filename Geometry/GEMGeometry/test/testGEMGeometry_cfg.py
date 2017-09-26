@@ -3,15 +3,17 @@ import FWCore.ParameterSet.Config as cms
 process = cms.Process("Demo")
 
 
-process.load('Configuration.Geometry.GeometryExtended2023D4Reco_cff')
-process.load('Configuration.Geometry.GeometryExtended2023D4_cff')
+process.load('Configuration.Geometry.GeometryExtended2023D20Reco_cff')
+process.load('Configuration.Geometry.GeometryExtended2023D20_cff')
+
+# customize DDD(true) or DB(false)?
+process.GEMGeometryESModule.useDDD=cms.bool(False)
 
 
-#process.load('Configuration.Geometry.GeometryExtended2023D1_cff')
-#process.load('Configuration.Geometry.GeometryExtended2023D1Reco_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
+#process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic', '')
 
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(1)
@@ -53,4 +55,7 @@ process.MessageLogger.cout = cms.untracked.PSet(
     FwkReport = cms.untracked.PSet( limit = cms.untracked.int32(-1) ),
     # GEMGeometryBuilderFromDDD   = cms.untracked.PSet( limit = cms.untracked.int32(-1) ),
     # GEMNumberingScheme            = cms.untracked.PSet( limit = cms.untracked.int32(-1) ),
-)                                                                                                                                                                 
+)
+
+# Print debug info
+print "\nGEMGeometryESModule: useDDD ", process.GEMGeometryESModule.useDDD, "\n"

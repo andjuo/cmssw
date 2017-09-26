@@ -28,6 +28,8 @@ GEMGeometryESModule::GEMGeometryESModule(const edm::ParameterSet & p)
 {
   useDDD = p.getParameter<bool>("useDDD");
   setWhatProduced(this);
+
+  //std::cout << "GEMGeometryBuilderFromDDD" << "\tGEMGeometryESModule: useDDD=" << useDDD << std::endl;
 }
 
 GEMGeometryESModule::~GEMGeometryESModule(){}

@@ -30,6 +30,7 @@ ME0GeometryESModule::ME0GeometryESModule(const edm::ParameterSet & p)
   useDDD       = p.getParameter<bool>("useDDD");
   use10EtaPart = p.getParameter<bool>("use10EtaPart");
   setWhatProduced(this);
+  std::cout << "\n\tME0GeometryESModule: useDDD=" << useDDD << ", use10EtaPart=" << use10EtaPart << "\n" << std::endl;
 }
 
 

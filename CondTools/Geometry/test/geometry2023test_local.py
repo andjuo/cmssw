@@ -9,8 +9,8 @@ process.source = cms.Source("EmptyIOVSource",
                             firstValue = cms.uint64(1),
                             interval = cms.uint64(1)
                             )
-process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cfi')
-process.GlobalTag.globaltag = autoCond['run1_mc']
+process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
+process.GlobalTag.globaltag = autoCond['run2_mc']
 
 process.GlobalTag.toGet = cms.VPSet(
     cms.PSet(record = cms.string("PHGCalRcd"),
@@ -34,6 +34,8 @@ process.GeometryTester = cms.EDAnalyzer("GeometryTester",
                                         CSCTest = cms.untracked.bool(False),
                                         DTTest = cms.untracked.bool(False),
                                         RPCTest = cms.untracked.bool(False),
+                                        GEMTest = cms.untracked.bool(False),
+                                        ME0Test = cms.untracked.bool(False),
                                         geomLabel = cms.untracked.string("")
                                         )
 

@@ -23,6 +23,7 @@
 <use name="Geometry/RPCGeometry"/>
 <use name="Geometry/RPCGeometryBuilder"/>
 <use name="Geometry/MuonNumbering"/>  
+<use name="Geometry/GEMGeometry"/>
 
 <library file="GeometryTester.cc" name="GeometryTester"> 
  <flags EDM_PLUGIN="1"/>

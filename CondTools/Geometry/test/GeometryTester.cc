@@ -17,6 +17,9 @@
 #include "CondFormats/GeometryObjects/interface/PCaloGeometry.h"
 #include "CondFormats/GeometryObjects/interface/RecoIdealGeometry.h" 
 #include "CondFormats/GeometryObjects/interface/CSCRecoDigiParameters.h"
+#include "Geometry/Records/interface/MuonGeometryRecord.h"
+#include "Geometry/GEMGeometry/interface/GEMGeometry.h"
+#include "Geometry/GEMGeometry/interface/ME0Geometry.h"
 
 #include "Geometry/Records/interface/GeometryFileRcd.h"    
 #include "Geometry/Records/interface/IdealGeometryRecord.h"
@@ -25,6 +28,8 @@
 #include "Geometry/Records/interface/RPCRecoGeometryRcd.h"
 #include "Geometry/Records/interface/CSCRecoGeometryRcd.h"
 #include "Geometry/Records/interface/CSCRecoDigiParametersRcd.h"
+#include "Geometry/Records/interface/GEMRecoGeometryRcd.h"
+#include "Geometry/Records/interface/ME0RecoGeometryRcd.h"
 #include "Geometry/Records/interface/PEcalBarrelRcd.h"
 #include "Geometry/Records/interface/PEcalEndcapRcd.h"
 #include "Geometry/Records/interface/PEcalPreshowerRcd.h"
@@ -37,6 +42,14 @@
 #include <iostream>
 #include <string>
 #include <vector>
+
+
+std::ostream& operator<<(std::ostream &out, const DetId &did)
+{
+  out << did.det();
+  return out;
+}
+
 
 namespace {
 
@@ -55,6 +68,7 @@ namespace {
     bool m_hcaltest, m_hgcaltest, m_calotowertest;
     bool m_castortest, m_zdctest, m_csctest;
     bool m_dttest, m_rpctest;
+    bool m_gemtest, m_me0test;
     std::string m_geomLabel;
   };
 }
@@ -72,6 +86,8 @@ GeometryTester::GeometryTester( const edm::ParameterSet& iConfig )
   m_csctest=iConfig.getUntrackedParameter<bool>( "CSCTest", true );
   m_dttest=iConfig.getUntrackedParameter<bool>( "DTTest", true );
   m_rpctest=iConfig.getUntrackedParameter<bool>( "RPCTest", true );
+  m_gemtest=iConfig.getUntrackedParameter<bool>( "GEMTest", true );
+  m_me0test=iConfig.getUntrackedParameter<bool>( "ME0Test", true );
   m_geomLabel = iConfig.getUntrackedParameter<std::string>( "geomLabel", "Extended" );
 }
 
@@ -449,6 +465,44 @@ GeometryTester::analyze( const edm::Event& , const edm::EventSetup& iSetup )
         std::cout << it;
       std::cout << "\n";
     }
+  }
+
+  if ( m_gemtest )
+  {
+    edm::ESHandle<GEMGeometry> pDD;
+    iSetup.get<MuonGeometryRecord>().get(pDD);
+    std::cout << " GEM\n"; // << &(*pDD) << std::endl;
+    std::cout << " detTypes       \t"              <<pDD->detTypes().size() << std::endl;
+    std::cout << " GeomDetUnit       \t"           <<pDD->detUnits().size() << std::endl;
+    std::cout << " GeomDet           \t"           <<pDD->dets().size() << std::endl;
+    std::cout << " GeomDetUnit DetIds\t"           <<pDD->detUnitIds().size() << std::endl;
+    std::cout << " eta partitions \t"              <<pDD->etaPartitions().size() << std::endl;
+    std::cout << " chambers       \t"              <<pDD->chambers().size() << std::endl;
+    std::cout << " super chambers  \t"             <<pDD->superChambers().size() << std::endl;
+    std::cout << " rings  \t\t"                    <<pDD->rings().size() << std::endl;
+    std::cout << " stations  \t\t"                 <<pDD->stations().size() << std::endl;
+    std::cout << " regions  \t\t"                  <<pDD->regions().size() << std::endl;
+
+    for( auto region : pDD->regions() )
+      std::cout << region;
+    std::cout << "\n";
+  }
+
+  if ( m_me0test )
+  {
+    edm::ESHandle<ME0Geometry> pDD;
+    iSetup.get<MuonGeometryRecord>().get(pDD);
+    std::cout << " ME0\n"; // << &(*pDD) << std::endl;
+    std::cout << " detTypes       \t"              <<pDD->detTypes().size() << std::endl;
+    std::cout << " GeomDetUnit       \t"           <<pDD->detUnits().size() << std::endl;
+    std::cout << " GeomDet           \t"           <<pDD->dets().size() << std::endl;
+    std::cout << " GeomDetUnit DetIds\t"           <<pDD->detUnitIds().size() << std::endl;
+    std::cout << " eta partitions \t"              <<pDD->etaPartitions().size() << std::endl;
+    std::cout << " layers         \t"              <<pDD->layers().size() << std::endl;
+    std::cout << " chamgers       \t"              <<pDD->chambers().size() << std::endl;
+    for( auto chamber : pDD->chambers() )
+      std::cout << chamber;
+    std::cout << "\n";
   }
 }
 

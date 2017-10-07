@@ -48,6 +48,14 @@ process.GlobalTag.toGet = cms.VPSet(
              tag = cms.string("DTRECO_Geometry_TagXX"),
              connect = cms.string("sqlite_file:myfile.db")
              ),
+    cms.PSet(record = cms.string("GEMRecoGeometryRcd"),
+             tag = cms.string("GEMRECO_Geometry_TagXX"),
+             connect = cms.string("sqlite_file:myfile.db")
+             ),
+    cms.PSet(record = cms.string("ME0RecoGeometryRcd"),
+             tag = cms.string("ME0RECO_Geometry_TagXX"),
+             connect = cms.string("sqlite_file:myfile.db")
+             ),
     cms.PSet(record = cms.string("PEcalPreshowerRcd"),
              tag = cms.string("EPRECO_Geometry_TagXX"),
              connect = cms.string("sqlite_file:myfile.db")
@@ -91,6 +99,8 @@ process.GeometryTester = cms.EDAnalyzer("GeometryTester",
                                         CSCTest = cms.untracked.bool(True),
                                         DTTest = cms.untracked.bool(True),
                                         RPCTest = cms.untracked.bool(True),
+                                        GEMTest = cms.untracked.bool(True),
+                                        ME0Test = cms.untracked.bool(True),
                                         geomLabel = cms.untracked.string("")
                                         )
 

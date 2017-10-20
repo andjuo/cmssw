@@ -22,6 +22,7 @@ using namespace gem;
 
 GEMDigiToRawModule::GEMDigiToRawModule(const edm::ParameterSet & pset) 
 {
+  std::cout << "GEMDigiToRawModule\n";
   event_type_ = pset.getParameter<int>("eventType");
   digi_token = consumes<GEMDigiCollection>( pset.getParameter<edm::InputTag>("gemDigi") );
   produces<FEDRawDataCollection>("GEMRawData");
@@ -152,5 +153,5 @@ void GEMDigiToRawModule::produce( edm::Event & e, const edm::EventSetup& c )
     word++;
   }
   
-  e.put(std::move(fedRawDataCol));
+  e.put(std::move(fedRawDataCol),"GEMRawData");
 }

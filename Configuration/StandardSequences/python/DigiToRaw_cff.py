@@ -13,6 +13,7 @@ from EventFilter.HcalRawToDigi.HcalDigiToRaw_cfi import *
 from EventFilter.CSCRawToDigi.cscPacker_cfi import *
 from EventFilter.DTRawToDigi.dtPacker_cfi import *
 from EventFilter.RPCRawToDigi.rpcPacker_cfi import *
+from EventFilter.GEMRawToDigi.gemDigiToRaw_cfi import *
 from EventFilter.CastorRawToDigi.CastorDigiToRaw_cfi import *
 from EventFilter.RawDataCollector.rawDataCollector_cfi import *
 from L1Trigger.Configuration.L1TDigiToRaw_cff import *
@@ -26,6 +27,25 @@ ecalPacker.labelEESRFlags = "simEcalDigis:eeSrFlags"
 
 from Configuration.Eras.Modifier_phase2_common_cff import phase2_common
 phase2_common.toReplaceWith(DigiToRaw, DigiToRaw.copyAndExclude([castorRawData]))
+
+# for some eras include GEM packer
+
+_run2_gem_DigiToRaw=DigiToRaw.copy()
+_run2_gem_DigiToRaw.replace(rpcpacker, rpcpacker*gempacker)
+#_run3_gem_DigiToRaw=DigiToRaw.copy()
+#_run3_gem_DigiToRaw.replace(rpcpacker, rpcpacker*gempacker*me0packer)
+
+from Configuration.Eras.Modifier_phase2_muon_cff import phase2_muon
+phase2_muon.toReplaceWith(DigiToRaw, _run2_gem_DigiToRaw)
+
+from Configuration.Eras.Modifier_run2_GEM_2017_cff import run2_GEM_2017
+run2_GEM_2017.toReplaceWith(DigiToRaw, _run2_gem_DigiToRaw)
+
+#from Configuration.Eras.Modifier_run2_GEM_2017_MCTest_cff import run2_GEM_2017_MCTest
+#run2_GEM_2017_MCTest.toReplaceWith(DigiToRaw, _run2_gem_DigiToRaw)
+
+#from Configuration.Eras.Modifer_run3_GEM_cff import run3_GEM
+#run3_GEM.toReplaceWith(DigiToRaw, _run3_gem_DigiToRaw)
 
 #until we have hcal raw data for phase 2....
 from Configuration.Eras.Modifier_phase2_hcal_cff import phase2_hcal

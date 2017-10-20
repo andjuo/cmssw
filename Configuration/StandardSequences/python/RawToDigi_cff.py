@@ -27,6 +27,9 @@ muonDTDigis = EventFilter.DTRawToDigi.dtunpacker_cfi.muonDTDigis.clone()
 import EventFilter.RPCRawToDigi.rpcUnpacker_cfi
 muonRPCDigis = EventFilter.RPCRawToDigi.rpcUnpacker_cfi.rpcunpacker.clone()
 
+import EventFilter.GEMRawToDigi.gemRawToDigi_cfi
+muonGEMDigis = EventFilter.GEMRawToDigi.gemRawToDigi_cfi.muonGEMDigis.clone()
+
 from EventFilter.CastorRawToDigi.CastorRawToDigi_cff import *
 castorDigis = EventFilter.CastorRawToDigi.CastorRawToDigi_cfi.castorDigis.clone( FEDs = cms.untracked.vint32(690,691,692, 693,722) )
 
@@ -48,6 +51,7 @@ RawToDigi = cms.Sequence(L1TRawToDigi
                          +muonCSCDigis
                          +muonDTDigis
                          +muonRPCDigis
+                         +muonGEMDigis
                          +castorDigis
                          +scalersRawToDigi
                          +tcdsDigis
@@ -60,11 +64,12 @@ RawToDigi_noTk = cms.Sequence(L1TRawToDigi
                               +muonCSCDigis
                               +muonDTDigis
                               +muonRPCDigis
+                              +muonGEMDigis
                               +castorDigis
                               +scalersRawToDigi
                               +tcdsDigis
                               )
-    
+
 scalersRawToDigi.scalersInputTag = 'rawDataCollector'
 siPixelDigis.InputLabel = 'rawDataCollector'
 #false by default anyways ecalDigis.DoRegional = False
@@ -74,6 +79,7 @@ hcalDigis.InputLabel = 'rawDataCollector'
 muonCSCDigis.InputObjects = 'rawDataCollector'
 muonDTDigis.inputLabel = 'rawDataCollector'
 muonRPCDigis.InputLabel = 'rawDataCollector'
+muonGEMDigis.InputLabel = 'rawDataCollector'
 castorDigis.InputLabel = 'rawDataCollector'
 
 from Configuration.Eras.Modifier_phase2_common_cff import phase2_common

@@ -7,7 +7,7 @@ import FWCore.ParameterSet.Config as cms
 
 from Configuration.StandardSequences.Eras import eras
 
-process = cms.Process('HLT',eras.Run2_2017)
+process = cms.Process('HLT',eras.Run2_2017,eras.run2_GEM_2017)
 
 # import of standard configurations
 process.load('Configuration.StandardSequences.Services_cff')
@@ -89,6 +89,10 @@ process.L1simulation_step = cms.Path(process.SimL1Emulator)
 process.digi2raw_step = cms.Path(process.DigiToRaw)
 process.endjob_step = cms.EndPath(process.endOfProcess)
 process.FEVTDEBUGHLToutput_step = cms.EndPath(process.FEVTDEBUGHLToutput)
+
+# Add GEM Cabling
+process.load('EventFilter.GEMRawToDigi.GEMSQLiteCabling_cfi')
+process.GEMCabling.connect = cms.string('sqlite_file:../../../CondTools/GEM/test/GEMEMap.db')
 
 # Schedule definition
 process.schedule = cms.Schedule(process.digitisation_step,process.L1simulation_step,process.digi2raw_step)

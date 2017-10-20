@@ -141,6 +141,8 @@ muonAssociatorByHits = cms.EDProducer("MuonAssociatorEDProducer",
     ignoreMissingTrackCollection = cms.untracked.bool(False),
 )
 
+from Configuration.Eras.Modifier_run2_GEM_2017_cff import run2_GEM_2017
+run2_GEM_2017.toModify( muonAssociatorByHits, useGEMs = cms.bool(True) )
 from Configuration.Eras.Modifier_run3_GEM_cff import run3_GEM
 run3_GEM.toModify( muonAssociatorByHits, useGEMs = cms.bool(True) )
 from Configuration.Eras.Modifier_phase2_tracker_cff import phase2_tracker

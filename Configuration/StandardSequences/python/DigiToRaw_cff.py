@@ -40,6 +40,12 @@ phase2_muon.toReplaceWith(DigiToRaw, _run2_gem_DigiToRaw)
 
 from Configuration.Eras.Modifier_run2_GEM_2017_cff import run2_GEM_2017
 run2_GEM_2017.toReplaceWith(DigiToRaw, _run2_gem_DigiToRaw)
+if run2_GEM_2017.isChosen() :
+    from EventFilter.GEMRawToDigi.GEMSQLiteCabling_cfi import GEMCabling
+    import os
+    GEMCabling_inpDB = os.path.expandvars('sqlite_file:$CMSSW_BASE/src/CondTools/GEM/test/GEMEMap.db')
+    GEMCabling.connect = cms.string(GEMCabling_inpDB)
+
 
 #from Configuration.Eras.Modifier_run2_GEM_2017_MCTest_cff import run2_GEM_2017_MCTest
 #run2_GEM_2017_MCTest.toReplaceWith(DigiToRaw, _run2_gem_DigiToRaw)

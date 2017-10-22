@@ -94,6 +94,14 @@ from Configuration.Eras.Modifier_phase2_tracker_cff import phase2_tracker
 phase2_tracker.toReplaceWith(RawToDigi, RawToDigi.copyAndExclude([siPixelDigis])) # FIXME
 
 
+from Configuration.Eras.Modifier_run2_GEM_2017_cff import run2_GEM_2017
+if run2_GEM_2017.isChosen() :
+    from EventFilter.GEMRawToDigi.GEMSQLiteCabling_cfi import GEMCabling
+    import os
+    GEMCabling_inpDB = os.path.expandvars('sqlite_file:$CMSSW_BASE/src/CondTools/GEM/test/GEMEMap.db')
+    GEMCabling.connect = cms.string(GEMCabling_inpDB)
+
+
 # add CTPPS 2016 raw-to-digi modules
 from Configuration.Eras.Modifier_ctpps_2016_cff import ctpps_2016
 

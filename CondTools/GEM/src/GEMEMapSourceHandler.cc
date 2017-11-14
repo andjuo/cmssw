@@ -30,6 +30,12 @@ popcon::GEMEMapSourceHandler::GEMEMapSourceHandler( const edm::ParameterSet& ps 
   m_connect( ps.getParameter<std::string>( "connect" ) ),
   m_connectionPset( ps.getParameter<edm::ParameterSet>( "DBParameters" ) )
 {
+  std::cout << "GEMEMapSourceHandler constructor\n";
+  std::cout << "  * m_name = " << m_name << "\n";
+  std::cout << "  * m_dummy= " << m_dummy << "\n";
+  std::cout << "  * m_validate= " << m_validate << "\n";
+  std::cout << "  * m_connect= " << m_connect << "\n";
+  std::cout << "  * DBParameters= " << m_connectionPset << "\n";
 }
 
 popcon::GEMEMapSourceHandler::~GEMEMapSourceHandler()
@@ -38,6 +44,7 @@ popcon::GEMEMapSourceHandler::~GEMEMapSourceHandler()
 
 void popcon::GEMEMapSourceHandler::getNewObjects()
 {
+  std::cout << "GEMEMapSourceHandler getNewObjects\n";
   
   edm::LogInfo( "GEMEMapSourceHandler" ) << "[" << "GEMEMapSourceHandler::" << __func__ << "]:" << m_name << ": "
                                          << "BEGIN" << std::endl;
@@ -68,7 +75,9 @@ void popcon::GEMEMapSourceHandler::getNewObjects()
                                          << "GEM eMap version: " << eMap_version << std::endl;
   eMap =  new GEMEMap(eMap_version);
   if (m_dummy==0) {
+    std::cout << "\n\tcalling ConnectOnlineDB" << std::endl;
     ConnectOnlineDB( m_connect, m_connectionPset );
+    std::cout << "\n\tcalling readGEMEMap" << std::endl;
     readGEMEMap();
     DisconnectOnlineDB();
   }
@@ -168,6 +177,7 @@ void popcon::GEMEMapSourceHandler::getNewObjects()
   // look for recent changes
   int difference=1;
   if (difference==1) {
+    std::cout << "GEMEMapSourceHandler getNewObjects difference=1\n";
     m_to_transfer.push_back(std::make_pair((GEMEMap*)eMap,snc));
     edm::LogInfo( "GEMEMapSourceHandler" ) << "[" << "GEMEMapSourceHandler::" << __func__ << "]:" << m_name << ": "
                                            << "Emap size: " << eMap->theVFatMaptype.size()
@@ -180,14 +190,18 @@ void popcon::GEMEMapSourceHandler::getNewObjects()
 // // additional work (I added these two functions: ConnectOnlineDB and DisconnectOnlineDB)
 void popcon::GEMEMapSourceHandler::ConnectOnlineDB( const std::string& connect, const edm::ParameterSet& connectionPset )
 {
+  std::cout << "GEMEMapSourceHandler ConnectOnlineDB\n";
   cond::persistency::ConnectionPool connection;
   edm::LogInfo( "GEMEMapSourceHandler" ) << "[" << "GEMEMapSourceHandler::" << __func__ << "]:" << m_name << ": "
                                          << "GEMEMapConfigSourceHandler: connecting to " << connect << "..." << std::endl;
   connection.setParameters( connectionPset );
+  std::cout << "connectionPset = " << connectionPset << "\n";
   connection.configure();
-  session = connection.createSession( connect,true );
+  //session = connection.createSession( connect,true );
+  session = connection.createSession( connect,false ); // not writeCapable
   edm::LogInfo( "GEMEMapSourceHandler" ) << "[" << "GEMEMapSourceHandler::" << __func__ << "]:" << m_name << ": "
                                          << "Done." << std::endl;
+  std::cout << "GEMEMapSourceHandler ConnectOnlineDB leaving" << std::endl;
 }
 
 void popcon::GEMEMapSourceHandler::DisconnectOnlineDB()
@@ -197,8 +211,39 @@ void popcon::GEMEMapSourceHandler::DisconnectOnlineDB()
 
 void popcon::GEMEMapSourceHandler::readGEMEMap()
 {
+  std::cout << "\nGEMEMapSourceHandler readGEMEMap" << std::endl;
+
+
   session.transaction().start( true );
+  std::cout << "transaction started" << std::endl;
   coral::ISchema& schema = session.nominalSchema();
+  std::cout << "got schema with name <" << schema.schemaName() << ">" << std::endl;
+
+  if (schema.schemaName().size()) {
+    std::set<std::string> tables= schema.listTables();
+    std::set<std::string> views= schema.listViews();
+    std::cout << "\n\ttables.size=" << tables.size() << ", views.size=" << views.size() << "\n" << std::endl;
+
+    if (tables.size()) {
+      std::cout << "tables:\n";
+      int idx=0;
+      for (std::set<std::string>::const_iterator it= tables.begin();
+	   it!=tables.end(); it++, idx++) {
+	std::cout << "table idx=" << idx << ": " << *it << "\n";
+      }
+      std::cout << std::endl;
+    }
+    if (views.size()) {
+      std::cout << "views:\n";
+      int idx=0;
+      for (std::set<std::string>::const_iterator it= views.begin();
+	   it!=views.end(); it++, idx++) {
+	std::cout << "views idx=" << idx << ": " << *it << "\n";
+      }
+      std::cout << std::endl;
+    }
+  }
+
   std::string condition="";
   coral::AttributeList conditionData;
 
@@ -207,8 +252,9 @@ void popcon::GEMEMapSourceHandler::readGEMEMap()
   coral::IQuery* query1 = schema.newQuery();
   /*select c.SECTOR, c.ZPOSN,c.IETA,c.IPHI,c.DEPTH,c.VFAT_POSN,c.DET_STRIP,c.VFAT_CHAN, b.VFAT_ADDRESS  from gem_omds.gem_vfat_channels c inner join  gem_omds.gem_sprchmbr_opthyb_vfats_v b on c.vfat_posn = b.vfat_posn and c.sector= b.sector and c.depth = b.depth*/
 
+  if (0) { // original sequence
   query1->addToTableList( "CMS_GEM_MUON_COND.gem_vfat_channels" );
-  query1->addToTableList( "CMS_GEM_MUON_VIEW.gem_sprchmbr_opthyb_vfats_view" );
+  //query1->addToTableList( "CMS_GEM_MUON_VIEW.gem_sprchmbr_opthyb_vfats_view" );
   query1->addToOutputList("CMS_GEM_MUON_COND.gem_vfat_channels.SECTOR", "SECTOR");
   query1->addToOutputList("CMS_GEM_MUON_COND.gem_vfat_channels.ZPOSN", "ZPOSN");
   query1->addToOutputList("CMS_GEM_MUON_COND.gem_vfat_channels.IETA", "IETA");
@@ -217,9 +263,74 @@ void popcon::GEMEMapSourceHandler::readGEMEMap()
   query1->addToOutputList("CMS_GEM_MUON_COND.gem_vfat_channels.VFAT_POSN", "VFAT_POSN");
   query1->addToOutputList("CMS_GEM_MUON_COND.gem_vfat_channels.DET_STRIP", "DET_STRIP");
   query1->addToOutputList("CMS_GEM_MUON_COND.gem_vfat_channels.VFAT_CHAN", "VFAT_CHAN");
-  query1->addToOutputList("CMS_GEM_MUON_VIEW.gem_sprchmbr_opthyb_vfats_view.VFAT_ADDRESS", "VFAT_ADDRESS");
+  //query1->addToOutputList("CMS_GEM_MUON_VIEW.gem_sprchmbr_opthyb_vfats_view.VFAT_ADDRESS", "VFAT_ADDRESS");
 
   condition = "CMS_GEM_MUON_COND.gem_vfat_channels.IETA>0";
+  }
+  else if (0) {
+    std::cout << "\tcapitalize table name\n";
+    coral::ITable* tableHandle= &schema.tableHandle("CMS_GEM_MUON_COND");
+    std::cout << "got tableHandle" << std::endl;
+    query1= tableHandle->newQuery();
+
+
+    query1->addToTableList( "CMS_GEM_MUON_COND.GEM_VFAT_CHANNELS" );
+    //query1->addToTableList( "CMS_GEM_MUON_VIEW.GEM_SPRCHMBR_OPTHYB_VFATS_VIEW");
+    query1->addToOutputList("CMS_GEM_MUON_COND.GEM_VFAT_CHANNELS.SECTOR", "SECTOR");
+    query1->addToOutputList("CMS_GEM_MUON_COND.GEM_VFAT_CHANNELS.ZPOSN", "ZPOSN");
+    query1->addToOutputList("CMS_GEM_MUON_COND.GEM_VFAT_CHANNELS.IETA", "IETA");
+    query1->addToOutputList("CMS_GEM_MUON_COND.GEM_VFAT_CHANNELS.IPHI", "IPHI");
+    query1->addToOutputList("CMS_GEM_MUON_COND.GEM_VFAT_CHANNELS.DEPTH", "DEPTH");
+    query1->addToOutputList("CMS_GEM_MUON_COND.GEM_VFAT_CHANNELS.VFAT_POSN", "VFAT_POSN");
+    query1->addToOutputList("CMS_GEM_MUON_COND.GEM_VFAT_CHANNELS.DET_STRIP", "DET_STRIP");
+    query1->addToOutputList("CMS_GEM_MUON_COND.GEM_VFAT_CHANNELS.VFAT_CHAN", "VFAT_CHAN");
+    //query1->addToOutputList("CMS_GEM_MUON_VIEW.GEM_SPRCHMBR_OPTHYB_VFATS_VIEW.VFAT_ADDRESS", "VFAT_ADDRESS");
+
+    condition = "CMS_GEM_MUON_COND.GEM_VFAT_CHANNELS.IETA>0";
+
+  }
+  else {
+    std::cout << "\tAJ sequence\n";
+    // AJ sequence
+    query1->addToTableList( "GEM_VFAT_CHANNELS" );
+    query1->addToTableList( "GEM_SUPRCHMBR_VFAT_VIEW_RH" );
+    query1->addToOutputList("GEM_VFAT_CHANNELS.SECTOR", "SECTOR");
+    query1->addToOutputList("GEM_VFAT_CHANNELS.ZPOSN", "ZPOSN");
+    query1->addToOutputList("GEM_VFAT_CHANNELS.IETA", "IETA");
+    query1->addToOutputList("GEM_VFAT_CHANNELS.IPHI", "IPHI");
+    query1->addToOutputList("GEM_VFAT_CHANNELS.DEPTH", "DEPTH");
+    query1->addToOutputList("GEM_VFAT_CHANNELS.VFAT_POSN", "VFAT_POSN");
+    query1->addToOutputList("GEM_VFAT_CHANNELS.DET_STRIP", "DET_STRIP");
+    query1->addToOutputList("GEM_VFAT_CHANNELS.VFAT_CHAN", "VFAT_CHAN");
+    query1->addToOutputList("GEM_SUPRCHMBR_VFAT_VIEW_RH.VFAT_ADDRESS", "VFAT_ADDRESS");
+    condition =  "GEM_VFAT_CHANNELS.VFAT_POSN=GEM_SUPRCHMBR_VFAT_VIEW_RH.VFAT_POSN ";
+    condition += " AND ";
+    condition += "GEM_VFAT_CHANNELS.SECTOR=GEM_SUPRCHMBR_VFAT_VIEW_RH.SECTOR";
+    condition += " AND ";
+    condition += "GEM_VFAT_CHANNELS.DEPTH=GEM_SUPRCHMBR_VFAT_VIEW_RH.CHMBR_DEPTH";
+
+    //query1->addToTableList( "gem_vfat_channels" );
+  //query1->addToTableList( "CMS_GEM_MUON_VIEW.gem_sprchmbr_opthyb_vfats_view" );
+  //query1->addToOutputList("gem_vfat_channels.SECTOR", "SECTOR");
+  //query1->addToOutputList("gem_vfat_channels.ZPOSN", "ZPOSN");
+  //query1->addToOutputList("gem_vfat_channels.IETA", "IETA");
+  //query1->addToOutputList("gem_vfat_channels.IPHI", "IPHI");
+  //query1->addToOutputList("gem_vfat_channels.DEPTH", "DEPTH");
+  //query1->addToOutputList("gem_vfat_channels.VFAT_POSN", "VFAT_POSN");
+  //query1->addToOutputList("gem_vfat_channels.DET_STRIP", "DET_STRIP");
+  //query1->addToOutputList("gem_vfat_channels.VFAT_CHAN", "VFAT_CHAN");
+  //query1->addToOutputList("CMS_GEM_MUON_VIEW.gem_sprchmbr_opthyb_vfats_view.VFAT_ADDRESS", "VFAT_ADDRESS");
+    //condition = "gem_vfat_channels.IETA>0";
+  }
+
+  // additional restrict for debug purposes
+  std::cout << " debug restriction\n";
+  condition += " AND GEM_VFAT_CHANNELS.IPHI=1 AND GEM_VFAT_CHANNELS.VFAT_POSN<2" ; // AND GEM_VFAT_CHANNELS.IETA=2";
+
+
+  // select only one side of the channels
+  condition += " AND GEM_VFAT_CHANNELS.IETA>0";
+
 
   query1->setCondition( condition, conditionData );
 
@@ -231,28 +342,45 @@ void popcon::GEMEMapSourceHandler::readGEMEMap()
   std::vector< std::pair<int,int> > theDAQ;
   while ( cursor1.next() ) {
     const coral::AttributeList& row = cursor1.currentRow();
-    vmtype.iEta.push_back( row["IETA"].data<int>() );
-    vmtype.iPhi.push_back( row["IPHI"].data<int>() );
-    vmtype.depth.push_back( row["DEPTH"].data<int>()  );
-    vmtype.vfat_position.push_back( row["VFAT_POSN"].data<int>()  );
+    //vmtype.iEta.push_back( row["IETA"].data<int>() );
+    vmtype.iEta.push_back( row["IETA"].data<short int>() );
+    //vmtype.iPhi.push_back( row["IPHI"].data<short int>() );
+    vmtype.iPhi.push_back( row["IPHI"].data<short int>() );
+    //vmtype.depth.push_back( row["DEPTH"].data<int>()  );
+    vmtype.depth.push_back( row["DEPTH"].data<short int>()  );
+    //vmtype.vfat_position.push_back( row["VFAT_POSN"].data<int>()  );
+    vmtype.vfat_position.push_back( row["VFAT_POSN"].data<short int>()  );
     vmtype.strip_number.push_back( row["DET_STRIP"].data<int>() );
     vmtype.vfat_chnnel_number.push_back( row["VFAT_CHAN"].data<int>()  );
-    vmtype.z_direction.push_back( row["ZPOSN"].data<int>() );
-    vmtype.vfatId.push_back( row["VFAT_ADDRESS"].data<uint16_t>()  );
-    std::string a = row["VFAT_ADDRESS"].data<std::string>();
-  
-    int sector;
-    std::string b=a.substr(a.find("GEM")+3,a.npos);
-    //std::cout <<" a  "<<a<<" b "<<b<<std::endl;
-    std::stringstream os;
-    os<<b;
-    os>>sector;
-    //std::cout <<" sector "<<sector<<std::endl;
+    //vmtype.z_direction.push_back( row["ZPOSN"].data<int>() );
+    vmtype.z_direction.push_back( row["ZPOSN"].data<short int>() );
 
+    //vmtype.vfatId.push_back( row["VFAT_ADDRESS"].data<uint16_t>()  );
+    std::string vfat_addr_str= row["VFAT_ADDRESS"].data<std::string>();
+    uint16_t addr= (vfat_addr_str.size()) ? static_cast<uint16_t>(strtol(vfat_addr_str.c_str(),NULL,16)) : -9999;
+    std::cout << "vfat_addr_str=" << vfat_addr_str << ", addr=" << std::hex << "0x" << addr << std::dec << "\n";
+    vmtype.vfatId.push_back(addr);
+
+    std::string a = (1) ? "NO_VFAT" : row["VFAT_ADDRESS"].data<std::string>();
+    int sector= -9999;
+    if (a != "NO_VFAT") {
+      std::string b=a.substr(a.find("GEM")+3,a.npos);
+      std::cout <<" a  "<<a<<" b "<<b<<std::endl;
+      std::stringstream os;
+      os<<b;
+      os>>sector;
+      std::cout <<" sector "<<sector<<std::endl;
+    }
+     vmtype.sec.push_back(sector);
  
-    vmtype.sec.push_back(sector);
+     std::cout << "vmtype size =" << vmtype.iEta.size() << " : "; vmtype.printLast(std::cout); std::cout << "\n";
+     edm::LogInfo( "GEMEMapSourceHandler" ) << "[" << "GEMEMapSourceHandler::" << __func__ << "]:" << "\t\tTEST : " << vmtype << "\n" << std::endl;
   }
   eMap->theVFatMaptype.push_back(vmtype); 
+
+
   delete query1;
+
+  std::cout << "GEMEMapSourceHandler readGEMEMap done" << std::endl;
 
 }

@@ -8,6 +8,7 @@
 
 #include "CondCore/PopCon/interface/PopCon.h"
 #include <vector>
+#include <iostream> // AJ
 
 
 #include "FWCore/Framework/interface/Frameworkfwd.h"
@@ -22,7 +23,14 @@ namespace popcon{
     
     PopConAnalyzer(const edm::ParameterSet& pset) : 
       m_populator(pset),
-      m_source(pset.getParameter<edm::ParameterSet>("Source")) {}
+      m_source(pset.getParameter<edm::ParameterSet>("Source")) {
+	// AJ debug:
+	edm::ParameterSet src= pset.getParameter<edm::ParameterSet>("Source");
+	std::cout << "PopConAnalyzer: \n";
+	std::cout << "m_populator is constructed from pset=" << pset << "\n";
+	std::cout << "m_source is constructed from Source as " << src << "\n";
+	std::cout << std::endl;
+      }
     
     
     virtual ~PopConAnalyzer(){}

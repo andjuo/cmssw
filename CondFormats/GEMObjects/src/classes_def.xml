@@ -1,6 +1,7 @@
 <lcgdict>
 
-  <class name="GEMEMap"/>
+
+  <class name="GEMEMap" class_version="1"/>
   <class name="GEMEMap::GEMEMapItem"/>
   <class name="std::vector<GEMEMap::GEMEMapItem>"/>
 
@@ -9,6 +10,31 @@
 
   <class name="GEMEMap::GEMVFatMapInPos"/>
   <class name="std::vector<GEMEMap::GEMVFatMapInPos>"/>
+
+
+  <class name="ME0EMap" class_version="1"/>
+  <class name="ME0EMap::ME0EMapItem"/>
+  <class name="std::vector<ME0EMap::ME0EMapItem>"/>
+
+  <class name="ME0EMap::ME0VFatMaptype"/>
+  <class name="std::vector<ME0EMap::ME0VFatMaptype>"/>
+
+  <class name="ME0EMap::ME0VFatMapInPos"/>
+  <class name="std::vector<ME0EMap::ME0VFatMapInPos>"/>
+
+
+  <class name="GEMMapItem"/>
+  <class name="GEMMapItem::MapItem"/>
+
+
+  <class name="GEMDeadStrips"/>
+  <class name="GEMDeadStrips::DeadItem"/>
+  <class name="std::vector<GEMDeadStrips::DeadItem>"/>
+
+
+  <class name="GEMMaskedStrips"/>
+  <class name="GEMMaskedStrips::MaskItem"/>
+  <class name="std::vector<GEMMaskedStrips::MaskItem>"/>
 
 
 </lcgdict>

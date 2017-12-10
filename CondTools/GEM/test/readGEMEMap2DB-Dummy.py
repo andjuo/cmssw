@@ -5,7 +5,7 @@ from CondCore.CondDB.CondDB_cfi import *
 
 options = VarParsing.VarParsing()
 options.register('connectionString',
-                 'sqlite_file:GEMEMap.db', #default value
+                 'sqlite_file:GEMEMapDummy.db', #default value
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  "Connection string")

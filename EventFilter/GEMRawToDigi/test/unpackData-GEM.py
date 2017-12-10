@@ -165,9 +165,17 @@ process.dumpRaw = cms.EDAnalyzer(
 )
 
 # raw to digi
-process.load('EventFilter.GEMRawToDigi.gemRawToDigi_cfi')
+#process.load('EventFilter.GEMRawToDigi.gemRawToDigi_cfi')
+process.load('EventFilter.GEMRawToDigi.gemUnpacker_cfi')
 process.load('EventFilter.GEMRawToDigi.GEMSQLiteCabling_cfi')
 process.muonGEMDigis.InputLabel = cms.InputTag('rawDataCollector')
+
+process.GEMCabling.connect = cms.string('sqlite_fip:CondTools/GEM/GEMEMap.db')
+process.GEMCabling.toGet = cms.VPSet(cms.PSet(
+        record = cms.string('GEMEMapRcd'),
+        tag = cms.string('GEMEMap_v1')
+))
+
 
 if (options.debug):
     process.muonGEMDigis.debug = cms.untracked.bool(True)

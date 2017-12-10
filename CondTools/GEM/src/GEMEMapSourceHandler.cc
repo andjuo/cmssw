@@ -30,6 +30,7 @@ popcon::GEMEMapSourceHandler::GEMEMapSourceHandler( const edm::ParameterSet& ps 
   m_connect( ps.getParameter<std::string>( "connect" ) ),
   m_connectionPset( ps.getParameter<edm::ParameterSet>( "DBParameters" ) )
 {
+  //std::cout << "m_dummy=" << m_dummy << "\n";
 }
 
 popcon::GEMEMapSourceHandler::~GEMEMapSourceHandler()
@@ -72,98 +73,77 @@ void popcon::GEMEMapSourceHandler::getNewObjects()
     readGEMEMap();
     DisconnectOnlineDB();
   }
+  else {
+    edm::LogInfo( "GEMEMapSourceHandler") << "[GEMEMapSourceHandler::" <<
+      __func__ << "]: " << m_dummy << std::endl;
 
+    // use edm::FileInPath
+    //TODO: data files go in a separate git repo, if needed
+    std::string baseCMS = std::string(getenv("CMSSW_BASE"))+std::string("/src/CondTools/GEM/data/");
+    std::vector<std::string> mapfiles;
 
+    //TString WhichConf = "CMSGE1/1";
 
-  /*
-  // additional work
-  //FIXME: you need a coral::ISessionProxy for accessing GEM data
-  //not a cond::Session designed for condition access.
-  //If so, the cond::Session data member is not needed.
-  if (m_dummy==0) {
-    //ConnectOnlineDB( m_connect, m_connectionPset );
-    //DisconnectOnlineDB();
-  }
- 
-  //FIXME: use edm::FileInPath
-  //TODO: data files go in a separate git repo, if needed
-  std::string baseCMS = std::string(getenv("CMSSW_BASE"))+std::string("/src/CondTools/GEM/data/");  
-  std::vector<std::string> mapfiles;
+    mapfiles.push_back("vfat_position.csv");
 
-  //TString WhichConf = "CMSGE1/1";
+    for (unsigned int ifm=0;ifm<mapfiles.size();ifm++){
+      GEMEMap::GEMVFatMaptype vmtype;
+      std::string filename(baseCMS+mapfiles[ifm]);
+      edm::LogInfo( "GEMEMapSourceHandler" ) << "[" << "GEMEMapSourceHandler::" << __func__ << "]:" << m_name << ": "
+					     <<"Opening CSV file "<< filename << std::endl;
+      vmtype.VFATmapTypeId=ifm+1;//this is 1 and 2 if there are two input files
+      std::ifstream maptype(filename.c_str());
+      //std::string buf("");
 
-  mapfiles.push_back("vfat_position.csv");
-  
-  for (unsigned int ifm=0;ifm<mapfiles.size();ifm++){  
-    GEMEMap::GEMVFatMaptype vmtype;
-    std::string filename(baseCMS+mapfiles[ifm]);
-    edm::LogInfo( "GEMEMapSourceHandler" ) << "[" << "GEMEMapSourceHandler::" << __func__ << "]:" << m_name << ": "
-					   <<"Opening CSV file "<< filename << std::endl;
-    vmtype.VFATmapTypeId=ifm+1;//this is 1 and 2 if there are two input files
-    std::ifstream maptype(filename.c_str());
-    std::string buf("");
-    
-    
-    std::string field, line, tmp_sec;
-    while(std::getline(maptype, line)){
-      //mapping v1:      VFAT_POSN	Z	IETA	IPHI	DEPTH	Detector Strip Number	VFAT channel Number	Px Connector Pin #
-      //mapping v2:             SUBDET   SECTOR	         TYPE	ZPOSN	IETA   IPHI   DEPTH   VFAT_POSN	  DET_STRIP   VFAT_CHAN   CONN_PIN
-      //mapping CS (7 Nov 2016) SUBDET   TSCOL   TSROW   TYPE   ZPOSN   IETA   IPHI   DEPTH   VFAT_POSN   DET_STRIP   VFAT_CHAN   CONN_PIN
+      std::string line, tmp_sec;
+      while(std::getline(maptype, line)){
+	//mapping v1:      VFAT_POSN	Z	IETA	IPHI	DEPTH	Detector Strip Number	VFAT channel Number	Px Connector Pin #
+	//mapping v2:             SUBDET   SECTOR	         TYPE	ZPOSN	IETA   IPHI   DEPTH   VFAT_POSN	  DET_STRIP   VFAT_CHAN   CONN_PIN
+	//mapping CS (7 Nov 2016) SUBDET   TSCOL   TSROW   TYPE   ZPOSN   IETA   IPHI   DEPTH   VFAT_POSN   DET_STRIP   VFAT_CHAN   CONN_PIN
       
-      int vfat_pos, z_dir, ieta, iphi, dep, str_num, vfat_chn_num, sec;
-      uint16_t vfat_add;
-      std::stringstream ssline(line);   
-      getline( ssline, field, ',' );
-      tmp_sec = "";
-      tmp_sec.push_back(field[4]);
-      tmp_sec.push_back(field[5]);
-      std::cout << tmp_sec << std::endl;
-      std::stringstream Sec(tmp_sec);
-      getline( ssline, field, ',' );
-      std::stringstream Z_dir(field);
-      getline( ssline, field, ',' );
-      std::stringstream Ieta(field);
-      getline( ssline, field, ',' );
-      std::stringstream Iphi(field);
-      getline( ssline, field, ',' );
-      std::stringstream Dep(field);
-      getline( ssline, field, ',' );
-      std::stringstream Vfat_pos(field);
-      getline( ssline, field, ',' );
-      std::stringstream Str_num(field);
-      getline( ssline, field, ',' );
-      std::stringstream Vfat_chn_num(field);
-      getline( ssline, field, ',' );
-      char* chr = strdup(field.c_str());
-      std::cout << chr << std::endl;
-      vfat_add = strtol(chr,NULL,16);
-      Sec >> sec;Z_dir >> z_dir; Ieta >> ieta; Iphi >> iphi; Dep >> dep; Vfat_pos >> vfat_pos; Str_num >> str_num; Vfat_chn_num >> vfat_chn_num; //(uint16_t)chr >> vfat_add;
+	int vfat_pos, z_dir, ieta, iphi, dep, str_num, vfat_chn_num, sec;
+	uint16_t vfat_add;
+	char c;
+	// First 2 input lines:
+	// GE1M01,-1,7,2,1,9,127,128,0xfef4
+	// GE1M01,-1,1,1,2,7,127,128,0xfe2c
+	tmp_sec=line.substr(0,6);
+	std::stringstream ssline(line.substr(6,line.size()-6));
+	ssline >> c >> z_dir >> c >> ieta >> c >> iphi >> c >> dep
+	       >> c >> vfat_pos >> c >> str_num >> c >> vfat_chn_num >> c
+	       >> std::hex >> vfat_add >> std::dec;
+	sec= atoi(tmp_sec.c_str()+4);
      
-      LogDebug( "GEMMapSourceHandler" ) << ", z_direction="<< z_dir
-					<< ", ieta="<< ieta
-					<< ", iphi="<< iphi
-					<< ", depth="<< dep
-					<< ", vfat position="<< vfat_pos
-					<< ", strip no.=" << str_num
-					<< ", vfat channel no.="<< vfat_chn_num
-					<< std::endl;
-      
-      std::cout<<" Sector="<<sec<<" z_direction="<<z_dir<<" ieta="<<ieta<<" iphi="<<iphi<<" depth="<<dep<<" vfat position="<<vfat_pos<<" strip no.="<<str_num<<" vfat channel no.="<<vfat_chn_num<<" vfat address = " << vfat_add <<std::endl;
-      //GEMDetId id(z_dir, 1, 1, dep, sec, ieta);
-      //std::cout  << id.rawId() << std::endl;    
-      vmtype.sec.push_back(sec);
-      vmtype.vfat_position.push_back(vfat_pos);
-      vmtype.z_direction.push_back(z_dir);
-      vmtype.iEta.push_back(ieta);
-      vmtype.iPhi.push_back(iphi);
-      vmtype.depth.push_back(dep);
-      vmtype.strip_number.push_back(str_num);
-      vmtype.vfat_chnnel_number.push_back(vfat_chn_num);
-      vmtype.vfatId.push_back(vfat_add);
-    }
+	LogDebug( "GEMMapSourceHandler" ) << ", z_direction="<< z_dir
+					  << ", ieta="<< ieta
+					  << ", iphi="<< iphi
+					  << ", depth="<< dep
+					  << ", vfat position="<< vfat_pos
+					  << ", strip no.=" << str_num
+					  << ", vfat channel no.="<< vfat_chn_num
+					  << std::endl;
+
+	//std::cout<<" Sector="<<sec<<" z_direction="<<z_dir<<" ieta="<<ieta<<" iphi="<<iphi<<" depth="<<dep<<" vfat position="<<vfat_pos<<" strip no.="<<str_num<<" vfat channel no.="<<vfat_chn_num<<" vfat address = " << std::hex << "0x" << vfat_add << std::dec <<std::endl;
+	//GEMDetId id(z_dir, 1, 1, dep, sec, ieta);
+	//std::cout  << id.rawId() << std::endl;
+	vmtype.vfat_position.push_back(vfat_pos);
+	vmtype.z_direction.push_back(z_dir);
+	vmtype.iEta.push_back(ieta);
+	vmtype.iPhi.push_back(iphi);
+	vmtype.depth.push_back(dep);
+	vmtype.strip_number.push_back(str_num);
+	vmtype.vfat_chnnel_number.push_back(vfat_chn_num);
+	vmtype.vfatId.push_back(vfat_add);
+	vmtype.sec.push_back(sec);
+      }
+      vmtype.VFATmapTypeId=1;
       eMap->theVFatMaptype.push_back(vmtype); 
-  }
-  */   
+    }
+
+    if (eMap->theVFatMaptype.size())
+      std::cout << "eMap size: " <<eMap->theVFatMaptype[0].iPhi.size() << "\n";
+  } // dummy map
+
   cond::Time_t snc = mydbservice->currentTime();  
   // look for recent changes
   int difference=1;
@@ -274,12 +254,11 @@ void popcon::GEMEMapSourceHandler::readGEMEMap()
   condition += " AND GEM_VFAT_CHANNELS.DEPTH=GEM_SUPRCHMBR_VFAT_VIEW_RH.CHMBR_DEPTH";
 
   // additional restrict for debug purposes
-  std::cout << "\n\t debug restriction: iPhi=1 and VFAT_POSN<2, and iEta>0\n";
-  condition += " AND GEM_VFAT_CHANNELS.IPHI=1 AND GEM_VFAT_CHANNELS.VFAT_POSN<2" ; // AND GEM_VFAT_CHANNELS.IETA=2";
+  //std::cout << "\n\t debug restriction: iPhi=1 and VFAT_POSN<2, and iEta>0\n";
+  //condition += " AND GEM_VFAT_CHANNELS.IPHI=1 AND GEM_VFAT_CHANNELS.VFAT_POSN<2" ; // AND GEM_VFAT_CHANNELS.IETA=2";
 
   // select only one side of the channels
-  condition += " AND GEM_VFAT_CHANNELS.IETA>0";
-
+  //condition += " AND GEM_VFAT_CHANNELS.IETA>0";
 
   query1->setCondition( condition, conditionData );
 
@@ -291,46 +270,43 @@ void popcon::GEMEMapSourceHandler::readGEMEMap()
   std::vector< std::pair<int,int> > theDAQ;
   while ( cursor1.next() ) {
     const coral::AttributeList& row = cursor1.currentRow();
+    //vmtype.vfat_position.push_back( row["VFAT_POSN"].data<int>()  );
+    vmtype.vfat_position.push_back( row["VFAT_POSN"].data<short int>()  );
+    //vmtype.z_direction.push_back( row["ZPOSN"].data<int>() );
+    vmtype.z_direction.push_back( row["ZPOSN"].data<short int>() );
     //vmtype.iEta.push_back( row["IETA"].data<int>() );
     vmtype.iEta.push_back( row["IETA"].data<short int>() );
     //vmtype.iPhi.push_back( row["IPHI"].data<short int>() );
     vmtype.iPhi.push_back( row["IPHI"].data<short int>() );
     //vmtype.depth.push_back( row["DEPTH"].data<int>()  );
     vmtype.depth.push_back( row["DEPTH"].data<short int>()  );
-    //vmtype.vfat_position.push_back( row["VFAT_POSN"].data<int>()  );
-    vmtype.vfat_position.push_back( row["VFAT_POSN"].data<short int>()  );
     vmtype.strip_number.push_back( row["DET_STRIP"].data<int>() );
     vmtype.vfat_chnnel_number.push_back( row["VFAT_CHAN"].data<int>()  );
-    //vmtype.z_direction.push_back( row["ZPOSN"].data<int>() );
-    vmtype.z_direction.push_back( row["ZPOSN"].data<short int>() );
 
     //vmtype.vfatId.push_back( row["VFAT_ADDRESS"].data<uint16_t>()  );
     std::string vfat_addr_str= row["VFAT_ADDRESS"].data<std::string>();
     uint16_t addr= (vfat_addr_str.size()) ? static_cast<uint16_t>(strtol(vfat_addr_str.c_str(),NULL,16)) : -9999;
-    //std::cout << "vfat_addr_str=" << vfat_addr_str << ", addr=" << std::hex << "0x" << addr << std::dec << "\n";
+    std::cout << "vfat_addr_str=" << vfat_addr_str << ", addr=" << std::hex << "0x" << addr << std::dec << "\n";
     vmtype.vfatId.push_back(addr);
 
-    std::string a = (1) ? "NO_VFAT" : row["VFAT_ADDRESS"].data<std::string>();
-    int sector= -9999;
-    if (a != "NO_VFAT") {
-      std::string b=a.substr(a.find("GEM")+3,a.npos);
-      //std::cout <<" a  "<<a<<" b "<<b<<std::endl;
-      std::stringstream os;
-      os<<b;
-      os>>sector;
-      //std::cout <<" sector "<<sector<<std::endl;
-    }
+    std::string a = row["SECTOR"].data<std::string>();
+    int sector= atoi(a.c_str()+4);
+    std::cout <<" a  "<< a << ", sector=" << sector << std::endl;
     vmtype.sec.push_back(sector);
 
     //std::cout << "vmtype size =" << vmtype.iEta.size() << " : "; vmtype.printLast(std::cout); std::cout << "\n";
      edm::LogInfo( "GEMEMapSourceHandler" ) << "[" << "GEMEMapSourceHandler::" << __func__ << "]:" << " check last : " << vmtype << std::endl;
   }
+  vmtype.VFATmapTypeId=1;
+  if (!vmtype.isConsistent()) std::cout << "\nvmtype is not consistent" << std::endl;
   eMap->theVFatMaptype.push_back(vmtype); 
 
 
   if (condition.find("GEM_VFAT_CHANNELS.IPHI=")!=condition.npos) {
     std::cout << "\n\t NOTE: debug restriction was applied" << std::endl;
   }
+
+  std::cout << "eMap size: " << eMap->theVFatMaptype[0].iPhi.size() << "\n";
 
   delete query1;
 

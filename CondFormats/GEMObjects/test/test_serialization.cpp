@@ -11,4 +11,12 @@ int main()
   testSerialization<GEMEMap::GEMVFatMapInPos>();
   testSerialization<std::vector<GEMEMap::GEMVFatMapInPos>>();
 
+  testSerialization<ME0EMap>();
+  testSerialization<ME0EMap::ME0EMapItem>();
+  testSerialization<std::vector<ME0EMap::ME0EMapItem>>();
+  testSerialization<ME0EMap::ME0VFatMaptype>();
+  testSerialization<std::vector<ME0EMap::ME0VFatMaptype>>();
+  testSerialization<ME0EMap::ME0VFatMapInPos>();
+  testSerialization<std::vector<ME0EMap::ME0VFatMapInPos>>();
+
 }

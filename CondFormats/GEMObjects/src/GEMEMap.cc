@@ -107,23 +107,23 @@ GEMROmap* GEMEMap::convertDummy() const{
 
 // ------
 
-int GEMEMap::consistent(int verbose, std::ostream &out) const
+int GEMEMap::isConsistent(int verbose, std::ostream &out) const
 {
   int ok=1;
   for (unsigned int i=0; (verbose || ok) && i<theEMapItem.size(); i++) {
-    if (theEMapItem[i].not_consistent()) {
+    if (theEMapItem[i].isNotConsistent()) {
       ok=0;
       if (verbose) out << "theEMapItem @" << i << " is not consistent\n";
     }
   }
   for (unsigned int i=0; (verbose || ok) && i<theVFatMaptype.size(); i++) {
-    if (theVFatMaptype[i].not_consistent()) {
+    if (theVFatMaptype[i].isNotConsistent()) {
       ok=0;
       if (verbose) out << "theVFatMaptype @" << i << " is not consistent\n";
     }
   }
   for (unsigned int i=0; (verbose || ok) && i<theVFatMapInPos.size(); i++) {
-    if (theVFatMapInPos[i].not_consistent()) {
+    if (theVFatMapInPos[i].isNotConsistent()) {
       ok=0;
       if (verbose) out << "theVFatMapInPos @" << i << " is not consistent\n";
     }
@@ -133,13 +133,13 @@ int GEMEMap::consistent(int verbose, std::ostream &out) const
 
 // ------
 
-int GEMEMap::GEMEMapItem::consistent() const
+int GEMEMap::GEMEMapItem::isConsistent() const
 {
   return (VFatIDs.size()==positions.size()) ? 1:0;
 }
 
 
-int GEMEMap::GEMEMapItem::not_consistent() const
+int GEMEMap::GEMEMapItem::isNotConsistent() const
 {
   return (VFatIDs.size()!=positions.size()) ? 1:0;
 }
@@ -147,7 +147,7 @@ int GEMEMap::GEMEMapItem::not_consistent() const
 
 void GEMEMap::GEMEMapItem::print(std::ostream &out, int idx) const
 {
-  if (!consistent()) {
+  if (!isConsistent()) {
     out << "GEMEMapItem::print(" << idx << "): object not consistent. Refusing to print\n";
     return;
   }
@@ -167,12 +167,12 @@ void GEMEMap::GEMEMapItem::printLast(std::ostream &out) const
 
 // ------
 
-int GEMEMap::GEMVFatMaptype::consistent() const
+int GEMEMap::GEMVFatMaptype::isConsistent() const
 {
-  return (not_consistent()==0) ? 1 : 0;
+  return (isNotConsistent()==0) ? 1 : 0;
 }
 
-int GEMEMap::GEMVFatMaptype::not_consistent() const
+int GEMEMap::GEMVFatMaptype::isNotConsistent() const
 {
   unsigned int sz= vfat_position.size();
   int bad=0;
@@ -190,7 +190,7 @@ int GEMEMap::GEMVFatMaptype::not_consistent() const
 
 void GEMEMap::GEMVFatMaptype::print(std::ostream &out, int idx) const
 {
-  int errCode= not_consistent();
+  int errCode= isNotConsistent();
   if (errCode!=0) {
     out << "GEMVFatMaptype::print(" << idx << ") is not consistent. Code="
 	<< errCode << std::endl;

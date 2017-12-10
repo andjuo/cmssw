@@ -19,16 +19,15 @@ class GEMEMap {
   GEMROmap* convert() const;
   GEMROmap* convertDummy() const;
 
-  int consistent(int verbose, std::ostream &out=std::cout) const;
-  //int not_consistent() const { return !not_consistent(deepCheck); }
+  int isConsistent(int verbose, std::ostream &out=std::cout) const;
 
   struct GEMEMapItem {
     int ChamberID;
     std::vector<int> VFatIDs;
     std::vector<int> positions;
 
-    int consistent() const;
-    int not_consistent() const;
+    int isConsistent() const;
+    int isNotConsistent() const;
     void print(std::ostream &out, int idx) const;
     void printLast(std::ostream &out=std::cout) const;
 
@@ -49,8 +48,8 @@ class GEMEMap {
     std::vector<uint16_t> vfatId;
     std::vector<int> sec; 
 
-    int consistent() const;
-    int not_consistent() const; // returns 0 or error code
+    int isConsistent() const;
+    int isNotConsistent() const; // returns 0 or error code
     void print(std::ostream &out, int idx) const;
     void printLast(std::ostream &out=std::cout) const;
 
@@ -63,7 +62,7 @@ class GEMEMap {
     int position;
     int VFATmapTypeId;
 
-    int not_consistent() const { return 0; } // dummy function
+    int isNotConsistent() const { return 0; } // dummy function
 
     COND_SERIALIZABLE;
   };

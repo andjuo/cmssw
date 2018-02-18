@@ -40,11 +40,14 @@ void GEMDigiToRawModule::fillDescriptions(edm::ConfigurationDescriptions & descr
 std::shared_ptr<GEMROmap> GEMDigiToRawModule::globalBeginRun(edm::Run const&, edm::EventSetup const& iSetup) const
 {
   auto gemORmap = std::make_shared<GEMROmap>();
+  std::cout << "GEMDigiToRawModule::globalBeginRun  useDBEMap_=" << useDBEMap_ << std::endl;
   if (useDBEMap_){
     edm::ESHandle<GEMEMap> gemEMapRcd;
     iSetup.get<GEMEMapRcd>().get(gemEMapRcd);
     auto gemEMap = std::make_unique<GEMEMap>(*(gemEMapRcd.product()));
+    std::cout << "calling convert" << std::endl;
     gemEMap->convert(*gemORmap);
+    std::cout << "convert done" << std::endl;
     gemEMap.reset();    
   }
   else {
@@ -53,11 +56,13 @@ std::shared_ptr<GEMROmap> GEMDigiToRawModule::globalBeginRun(edm::Run const&, ed
     gemEMap->convertDummy(*gemORmap);
     gemEMap.reset();    
   }
+  std::cout << "returning gemORmap" << std::endl;
   return gemORmap;
 }
 
 void GEMDigiToRawModule::produce(edm::StreamID iID, edm::Event & iEvent, edm::EventSetup const&) const
 {
+  std::cout << "entered produce" << std::endl;
   auto fedRawDataCol = std::make_unique<FEDRawDataCollection>();
 
   // Take digis from the event
@@ -79,8 +84,13 @@ void GEMDigiToRawModule::produce(edm::StreamID iID, edm::Event & iEvent, edm::Ev
 
     int mapsize =0;
     const std::map<GEMROmap::eCoord,GEMROmap::dCoord> *roMapED = gemROMap->getRoMap();
+
+    int mapsize_debug=0;
+    for (auto ro=roMapED->begin(); ro!=roMapED->end(); ++ro){ mapsize_debug++; }
+
     for (auto ro=roMapED->begin(); ro!=roMapED->end(); ++ro){
       mapsize++;
+      std::cout << "iterating mapsize=" << mapsize << "/" << mapsize_debug << std::endl;
       GEMROmap::eCoord ec = ro->first;
       GEMROmap::dCoord dc = ro->second;
 
@@ -179,6 +189,8 @@ void GEMDigiToRawModule::produce(edm::StreamID iID, edm::Event & iEvent, edm::Ev
       }
     }
 
+    std::cout << "roMap ed done" << std::endl;
+
     // CDFHeader
     uint8_t cb5 = 0x5;// control bit, should be 0x5 bits 60-63
     uint8_t Evt_ty = event_type_;
@@ -186,6 +198,9 @@ void GEMDigiToRawModule::produce(edm::StreamID iID, edm::Event & iEvent, edm::Ev
     uint16_t BX_id = iEvent.bunchCrossing();
     uint16_t Source_id = FEDNumbering::MINGEMFEDID;
     amc13Event->setCDFHeader(cb5, Evt_ty, LV1_id, BX_id, Source_id);
+
+
+    std::cout << "get amc13Event" << std::endl;
 
     // AMC13header
     uint8_t CalTyp = 1;
@@ -216,6 +231,9 @@ void GEMDigiToRawModule::produce(edm::StreamID iID, edm::Event & iEvent, edm::Ev
     amc13Events.emplace_back(std::move(amc13Event));
   }// finished making amc13Event data
   
+  std::cout << "finished amc13Event data" << std::endl;
+
+
   // read out amc13Events into fedRawData
   for (const auto & amc13e : amc13Events){
     std::vector<uint64_t> words;    
@@ -259,6 +277,8 @@ void GEMDigiToRawModule::produce(edm::StreamID iID, edm::Event & iEvent, edm::Ev
     
     LogDebug("GEMDigiToRawModule") <<" words " << words.size();
   }
+
+  std::cout << "done!!" << std::endl;
 
   iEvent.put(std::move(fedRawDataCol));
 }

@@ -24,7 +24,7 @@ RawToDigi = cms.Sequence(csctfDigis+dttfDigis+gctDigis+gtDigis+gtEvmDigis+siPixe
 
 RawToDigi_woGCT = cms.Sequence(csctfDigis+dttfDigis+gtDigis+gtEvmDigis+siPixelDigis+siStripDigis+ecalDigis+ecalPreshowerDigis+hcalDigis+muonCSCDigis+muonDTDigis+muonRPCDigis+castorDigis+scalersRawToDigi)
 
-if run2_GEM_2017.isChosen() or run3_GEM:
+if run2_GEM_2017.isChosen() or run3_GEM.isChosen():
     RawToDigi+= cms.Sequence(muonGEMDigis)
     RawToDigi_woGCT+= cms.Sequence(muonGEMDigis)
 

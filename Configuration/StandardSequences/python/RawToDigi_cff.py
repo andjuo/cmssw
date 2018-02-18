@@ -27,7 +27,8 @@ muonDTDigis = EventFilter.DTRawToDigi.dtunpacker_cfi.muonDTDigis.clone()
 import EventFilter.RPCRawToDigi.rpcUnpacker_cfi
 muonRPCDigis = EventFilter.RPCRawToDigi.rpcUnpacker_cfi.rpcunpacker.clone()
 
-import EventFilter.GEMRawToDigi.muonGEMDigis_cfi
+# import muonGEMDigis and GEMCabling
+from EventFilter.GEMRawToDigi.muonGEMDigis_cfi import *
 muonGEMDigis = EventFilter.GEMRawToDigi.muonGEMDigis_cfi.muonGEMDigis.clone()
 
 import EventFilter.GEMRawToDigi.muonME0Digis_cfi

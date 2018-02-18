@@ -17,12 +17,16 @@ hcalDigis.InputLabel = 'rawDataRepacker'
 muonCSCDigis.InputObjects = 'rawDataRepacker'
 muonDTDigis.inputLabel = 'rawDataRepacker'
 muonRPCDigis.InputLabel = 'rawDataRepacker'
+muonGEMDigis.InputLabel = 'rawDataRepacker'
 castorDigis.InputLabel = 'rawDataRepacker'
 
 RawToDigi = cms.Sequence(csctfDigis+dttfDigis+gctDigis+gtDigis+gtEvmDigis+siPixelDigis+siStripDigis+ecalDigis+ecalPreshowerDigis+hcalDigis+muonCSCDigis+muonDTDigis+muonRPCDigis+castorDigis+scalersRawToDigi)
 
 RawToDigi_woGCT = cms.Sequence(csctfDigis+dttfDigis+gtDigis+gtEvmDigis+siPixelDigis+siStripDigis+ecalDigis+ecalPreshowerDigis+hcalDigis+muonCSCDigis+muonDTDigis+muonRPCDigis+castorDigis+scalersRawToDigi)
 
+if run2_GEM_2017.isChosen() or run3_GEM:
+    RawToDigi+= cms.Sequence(muonGEMDigis)
+    RawToDigi_woGCT+= cms.Sequence(muonGEMDigis)
 
 siStripVRDigis = siStripDigis.clone(ProductLabel = 'virginRawDataRepacker')
 RawToDigi_withVR = cms.Sequence(RawToDigi + siStripVRDigis)

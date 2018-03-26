@@ -8,4 +8,10 @@ int main()
   testSerialization<std::vector<GEMELMap::GEMVFatMap>>();
   testSerialization<GEMELMap::GEMStripMap>();
   testSerialization<std::vector<GEMELMap::GEMStripMap>>();
+  testSerialization<GEMDeadStrips>();
+  testSerialization<std::vector<GEMDeadStrips>>();
+  testSerialization<GEMMaskedStrips>();
+  testSerialization<std::vector<GEMMaskedStrips>>();
+  testSerialization<GEMPVSSFWCAENChannel>();
+  testSerialization<std::vector<GEMPVSSFWCAENChannel>>();
 }

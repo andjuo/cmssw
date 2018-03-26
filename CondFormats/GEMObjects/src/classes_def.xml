@@ -11,4 +11,10 @@
   <class name="GEMMaskedStrips"/>
   <class name="GEMMaskedStrips::MaskItem"/>
 
+  <class name="GEMPVSSFWCAENChannel"/>
+  <class name="GEMPVSSFWCAENChannel::GEM_IMonParam"/>
+  <class name="GEMPVSSFWCAENChannel::GEM_VMonParam"/>
+  <class name="GEMPVSSFWCAENChannel::GEMMonItem<GEMPVSSFWCAENChannel::GEM_IMonParam>"/>
+  <class name="GEMPVSSFWCAENChannel::GEMMonItem<GEMPVSSFWCAENChannel::GEM_VMonParam>"/>
+
 </lcgdict>

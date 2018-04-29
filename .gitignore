@@ -4,3 +4,8 @@ __init__.py
 .#*
 #*#
 *~
+*.d
+*.so
+*.pcm
+*.log
+*.out

@@ -17,4 +17,7 @@
   <class name="GEMPVSSFWCAENChannel::GEMMonItem<GEMPVSSFWCAENChannel::GEM_IMonParam>"/>
   <class name="GEMPVSSFWCAENChannel::GEMMonItem<GEMPVSSFWCAENChannel::GEM_VMonParam>"/>
 
+  <class name="GEMPVSSFWCAENChannelIVRunAvg"/>
+  <class name="GEMPVSSFWCAENChannelIVRunAvg::RunTime"/>
+
 </lcgdict>

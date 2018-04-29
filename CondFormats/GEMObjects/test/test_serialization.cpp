@@ -14,4 +14,8 @@ int main()
   testSerialization<std::vector<GEMMaskedStrips>>();
   testSerialization<GEMPVSSFWCAENChannel>();
   testSerialization<std::vector<GEMPVSSFWCAENChannel>>();
+  testSerialization<GEMPVSSFWCAENChannelIVRunAvg>();
+  testSerialization<std::vector<GEMPVSSFWCAENChannelIVRunAvg>>();
+  testSerialization<GEMPVSSFWCAENChannelIVRunAvg::RunTime>();
+  testSerialization<std::vector<GEMPVSSFWCAENChannelIVRunAvg::RunTime>>();
 }

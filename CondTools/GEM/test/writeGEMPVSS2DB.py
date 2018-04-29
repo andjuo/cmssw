@@ -7,13 +7,17 @@ process = cms.Process("Write2DB")
 from CondCore.CondDB.CondDB_cfi import *
 #process.CondDB.DBParameters.messageLevel = cms.untracked.int32(3)
 
-sourceConnection = 'oracle://CMS_COND_GENERAL_R:p3105rof@cms_omds_adg/CMS_GEM_PVSS_COND'
 #sourceConnection = 'oracle://cms_omds_adg/CMS_GEM_MUON_COND'
 sourceConnection = 'oracle://cms_omds_adg/CMS_GEM_PVSS_COND'
 
 
 options = VarParsing.VarParsing()
 options.register( 'runNumber',
+                  1, #default value
+                  VarParsing.VarParsing.multiplicity.singleton,
+                  VarParsing.VarParsing.varType.int,
+                  "Run number to be uploaded." )
+options.register( 'numberOfRuns',
                   1, #default value
                   VarParsing.VarParsing.multiplicity.singleton,
                   VarParsing.VarParsing.varType.int,
@@ -70,9 +74,9 @@ if options.messageLevel == 3:
     process.MessageLogger.debugModules = cms.untracked.vstring( '*' )
 
 process.source = cms.Source( "EmptyIOVSource",
-                             lastValue = cms.uint64( options.runNumber ),
                              timetype = cms.string( 'runnumber' ),
                              firstValue = cms.uint64( options.runNumber ),
+                             lastValue = cms.uint64( options.runNumber + options.numberOfRuns ),
                              interval = cms.uint64( 1 ) )
 
 process.PoolDBOutputService = cms.Service( "PoolDBOutputService",
@@ -92,8 +96,9 @@ process.WriteInDB = cms.EDAnalyzer("GEMPVSSFWCAENChannelDBWriter",
                        WriteDummy = cms.untracked.int32(0),#fakeData for testing
                        Validate = cms.untracked.int32( 0 ),
 #                       sinceTime = cms.untracked.int64( 1521986075 ), # 20180325 ),
-                       sinceTime = cms.untracked.int64( 20180325 ),
-                       untilTime = cms.untracked.int64( 1522070221 ), # 20180326
+                       sinceTime = cms.untracked.int64( 20180407 ),
+                       untilTime = cms.untracked.int64 (20180409 ),
+                       #untilTime = cms.untracked.int64( 1522070221 ), # 20180326
                        #untilTime = cms.untracked.int64( 1844674407370955 ), # 20280615 9:33:27.371
                        printValues = cms.untracked.bool( False ), # whether to print obtained values
                        listTables = cms.untracked.int32(0) #listAllTables and their fields

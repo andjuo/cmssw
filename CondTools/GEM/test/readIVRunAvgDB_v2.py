@@ -5,25 +5,25 @@ from CondCore.CondDB.CondDB_cfi import *
 
 options = VarParsing.VarParsing()
 options.register('connectionString',
-                 'sqlite_file:GEM-PVSS.db', #default value
+                 'sqlite_file:GEM_IVRunAvgPopCon_test.db', #default value
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  "Connection string")
-options.register('tag',
-                 'GEMPVSSFWCAENChannel_v1', #default value
-                 VarParsing.VarParsing.multiplicity.singleton,
-                 VarParsing.VarParsing.varType.string,
-                 "Tag")
+#options.register('tag',
+#                 'GEMPVSSFWCAENChannelIVRunAvg_v1', #default value
+#                 VarParsing.VarParsing.multiplicity.singleton,
+#                 VarParsing.VarParsing.varType.string,
+#                 "Tag")
 options.register('runNumber',
-                 4294967292, #default value, int limit -3
+                 314324, #default value, int limit -3
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  "Run number; default gives latest IOV")
-options.register('numberOfRuns',
-                 1, #default value
-                 VarParsing.VarParsing.multiplicity.singleton,
-                 VarParsing.VarParsing.varType.int,
-                 "number of runs in the job")
+#options.register('numberOfRuns',
+#                 1, #default value
+#                 VarParsing.VarParsing.multiplicity.singleton,
+#                 VarParsing.VarParsing.varType.int,
+#                 "number of runs in the job")
 options.register('messageLevel',
                  0, #default value
                  VarParsing.VarParsing.multiplicity.singleton,
@@ -44,28 +44,30 @@ process.MessageLogger = cms.Service( "MessageLogger",
 process.source = cms.Source("EmptyIOVSource",
                             timetype = cms.string('runnumber'),
                             firstValue = cms.uint64(options.runNumber),
-                            lastValue = cms.uint64(options.runNumber + options.numberOfRuns),
+                            lastValue = cms.uint64(options.runNumber),
                             interval = cms.uint64(1)
                         )
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32( options.numberOfRuns ) ) #options.numberOfRuns runs per job
+#process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32( options.numberOfRuns ) ) #options.numberOfRuns runs per job
 
 process.GEMPVSSFWCAENChannelESSource = cms.ESSource( "PoolDBESSource",
                                    CondDBReference,
-                                   toGet = cms.VPSet( cms.PSet( record = cms.string('GEMPVSSFWCAENChannelRcd'),
-                                                                tag = cms.string('GEMPVSSFWCAENChannel_v1')
+                                                     timetype = cms.string('runnumber'),
+                                   toGet = cms.VPSet( cms.PSet( record = cms.string('GEMPVSSFWCAENChannelIVRunAvgRcd'),
+                                                                tag = cms.string('GEMPVSSIVRunAvg_v1')
                                                                 )
                                                       ),
                                    )
 
-process.reader = cms.EDAnalyzer( "GEMPVSSFWCAENChannelDBReader",
-                                 dumpFileName = cms.untracked.string( "dumpGEMPVSS.out" )
-)
+process.reader = cms.EDAnalyzer( "GEMPVSSFWCAENChannelIVRunAvgDBReader",
+                                 dumpFileName = cms.untracked.string( "dumpGEMPVSSIVRunAvg.out")
+ )
 
 process.recordDataGetter = cms.EDAnalyzer( "EventSetupRecordDataGetter",
                                            toGet =  cms.VPSet(),
                                            verbose = cms.untracked.bool( True )
                                            )
+
 process.escontent = cms.EDAnalyzer( "PrintEventSetupContent",
                                     compact = cms.untracked.bool( True ),
                                     printProviders = cms.untracked.bool( True )
@@ -75,11 +77,11 @@ process.esretrieval = cms.EDAnalyzer( "PrintEventSetupDataRetrieval",
                                       )
 
 #Path definition
-process.GEMPVSSFWCAENChannelReaderSourcePath = cms.Path( process.reader + process.recordDataGetter )
+process.GEMPVSSFWCAENChannelIVRunAvgReaderSourcePath = cms.Path( process.reader + process.recordDataGetter )
 process.esout = cms.EndPath( process.escontent + process.esretrieval )
 
 #Schedule definition
-process.schedule = cms.Schedule( process.GEMPVSSFWCAENChannelReaderSourcePath,
+process.schedule = cms.Schedule( process.GEMPVSSFWCAENChannelIVRunAvgReaderSourcePath,
                                  process.esout
                                  )
 

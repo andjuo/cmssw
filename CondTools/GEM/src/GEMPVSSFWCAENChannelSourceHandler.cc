@@ -18,7 +18,8 @@
 #include "CoralBase/AttributeList.h"
 #include "CoralBase/Attribute.h"
 #include "CoralBase/AttributeSpecification.h"
-#include <TString.h>
+
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <fstream>
 #include <cstdlib>
@@ -116,8 +117,6 @@ void popcon::GEMPVSSFWCAENChannelSourceHandler::getNewObjects()
   edm::LogInfo( "GEMPVSSFWCAENChannelSourceHandler" ) << "[" << "GEMPVSSFWCAENChannelSourceHandler::" << __func__ << "]:" << m_name << ": "
                                          << "BEGIN" << std::endl;
 
-  edm::Service<cond::service::PoolDBOutputService> mydbservice;
-
   // first check what is already there in offline DB
   Ref payload;
   if(m_validate==1 && tagInfo().size>0) {
@@ -132,12 +131,18 @@ void popcon::GEMPVSSFWCAENChannelSourceHandler::getNewObjects()
 
   // now construct new cabling map from online DB
   // FIXME: use boost::ptime
+  /*
   time_t rawtime;
   time(&rawtime); //time since January 1, 1970
   tm * ptm = gmtime(&rawtime);//GMT time
   char buffer[20];
   strftime(buffer,20,"%d/%m/%Y_%H:%M:%S",ptm);
   std::string pvssInfo_version( buffer );
+  */
+  boost::posix_time::ptime timeStamp(boost::posix_time::second_clock::universal_time());
+  std::string tsStr= boost::posix_time::to_simple_string(timeStamp);
+  int tsStopAt= (tsStr.find('.')==std::string::npos) ? tsStr.size() : tsStr.find('.');
+  std::string pvssInfo_version( tsStr.substr(0, tsStopAt) );
   edm::LogInfo( "GEMPVSSFWCAENChannelSourceHandler" ) << "[" << "GEMPVSSFWCAENChannelSourceHandler::" << __func__ << "]:" << m_name << ": "
                                          << "GEM PVSSInfo version: " << pvssInfo_version << std::endl;
   fwCh =  new GEMPVSSFWCAENChannel(pvssInfo_version);
@@ -157,13 +162,16 @@ void popcon::GEMPVSSFWCAENChannelSourceHandler::getNewObjects()
   }
   else {
     std::cout << "\n putting dummy data\n\n";
+    boost::posix_time::ptime timeNowI(boost::posix_time::second_clock::local_time());
+    boost::posix_time::ptime timeNowV(timeNowI + boost::posix_time::time_duration(0,0,1,0));
     for (int i=0; i<5; i++)
-      fwCh->gem_ObImon_.push_back(GEMPVSSFWCAENChannel::GEMMonItem<GEMPVSSFWCAENChannel::GEM_IMonParam>(i+10, 20180324, 1500, 0.2*(i+1)));
+      fwCh->gem_ObImon_.push_back(GEMPVSSFWCAENChannel::GEMMonItem<GEMPVSSFWCAENChannel::GEM_IMonParam>(i+10, timeNowI, 0.2*(i+1)));
     for (int v=0; v<6; v++)
-      fwCh->gem_ObVmon_.push_back(GEMPVSSFWCAENChannel::GEMMonItem<GEMPVSSFWCAENChannel::GEM_VMonParam>(v+20, 20180324, 1501, 0.2*(v+2)));
+      fwCh->gem_ObVmon_.push_back(GEMPVSSFWCAENChannel::GEMMonItem<GEMPVSSFWCAENChannel::GEM_VMonParam>(v+20, timeNowV, 0.2*(v+2)));
   }
 
 
+  edm::Service<cond::service::PoolDBOutputService> mydbservice;
   cond::Time_t snc = mydbservice->currentTime();
   // look for recent changes
   int difference=1;

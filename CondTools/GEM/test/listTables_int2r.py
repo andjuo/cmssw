@@ -8,7 +8,8 @@ from CondCore.CondDB.CondDB_cfi import *
 #process.CondDB.DBParameters.messageLevel = cms.untracked.int32(3)
 
 #sourceConnection = 'oracle://cms_omds_adg/CMS_GEM_MUON_COND'
-sourceConnection = 'oracle://cms_omds_adg/CMS_GEM_PVSS_COND'
+#sourceConnection = 'oracle://INT2R/FWCAENCHANNELA1515'
+sourceConnection = 'oracle://INT2R/DP_NAME2ID'
 
 
 options = VarParsing.VarParsing()

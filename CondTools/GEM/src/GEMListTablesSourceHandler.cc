@@ -1,4 +1,4 @@
-#include "CondTools/GEM/interface/GEMPVSSFWCAENChannelSourceHandler.h"
+#include "CondTools/GEM/interface/GEMListTablesSourceHandler.h"
 #include "CondCore/CondDB/interface/ConnectionPool.h"
 #include "CondCore/DBOutputService/interface/PoolDBOutputService.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
@@ -49,6 +49,7 @@ popcon::GEMListTablesSourceHandler::~GEMListTablesSourceHandler()
 
 void popcon::GEMListTablesSourceHandler::getNewObjects()
 {
+  GEMPVSSFWCAENChannel ch;
   std::cout << "GEMListTablesSourceHandler getNewObjects" << std::endl;
   listDBTablesInSchema();
   std::cout << "GEMListTablesSourceHandler getNewObjects done" << std::endl;
@@ -61,11 +62,11 @@ void popcon::GEMListTablesSourceHandler::listDBTablesInSchema()
 
   //std::cout << "GEMListTablesSourceHandler ConnectOnlineDB\n";
   cond::persistency::ConnectionPool connection;
-  edm::LogInfo( "GEMListTablesSourceHandler" ) << "[" << "GEMListTablesSourceHandler::" << __func__ << "]: " << "GEMEMapConfigSourceHandler: connecting to " << connect << "..." << std::endl;
+  edm::LogInfo( "GEMListTablesSourceHandler" ) << "[" << "GEMListTablesSourceHandler::" << __func__ << "]: " << "GEMEMapConfigSourceHandler: connecting to " << m_connect << "..." << std::endl;
   connection.setParameters( m_connectionPset );
   //std::cout << "connectionPset = " << connectionPset << "\n";
   connection.configure();
-  cond::persistency::Session session = connection.createSession( connect,false );
+  cond::persistency::Session session = connection.createSession( m_connect,false );
   //session = connection.createSession( connect,false ); // false -- not writeCapable
   std::cout << "GEMListTablesSourceHandler ConnectOnlineDB leaving" << std::endl;
 

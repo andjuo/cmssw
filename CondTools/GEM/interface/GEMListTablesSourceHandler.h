@@ -1,5 +1,5 @@
-#ifndef CondTools_GEM_GEMPVSSFWCAENChannelSourceHandler_h
-#define CondTools_GEM_GEMPVSSFWCAENChannelSourceHandler_h
+#ifndef CondTools_GEM_GEMListTablesSourceHandler_h
+#define CondTools_GEM_GEMListTablesSourceHandler_h
 
 #include "CondCore/PopCon/interface/PopConSourceHandler.h"
 #include "CondFormats/GEMObjects/interface/GEMPVSSFWCAENChannel.h"
@@ -17,6 +17,7 @@ namespace popcon
 
     GEMListTablesSourceHandler( const edm::ParameterSet& ps );
     ~GEMListTablesSourceHandler();
+    std::string id() const { return std::string("GEMListTablesSourceHandler"); }
     void getNewObjects(); // no work will be done
     void listDBTablesInSchema(); // only list tables in the given schema
 

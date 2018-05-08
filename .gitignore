@@ -9,3 +9,6 @@ __init__.py
 *.pcm
 *.log
 *.out
+CondTools/GEM/*/*.db
+CondTools/GEM/*/test/*.db
+

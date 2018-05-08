@@ -1,6 +1,7 @@
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "CondTools/GEM/interface/GEMPVSSFWCAENChannelIVRunAvgPlotter.h"
 #include "CondTools/GEM/interface/GEMPVSSFWCAENChannelIVRunAvgReadDBs.h"
+#include "CondTools/GEM/interface/GEMPVSSFWCAENChannelReadDIPDs.h"
 #include <TH1F.h>
 #include <TFile.h>
 #include <TObjString.h>
@@ -48,30 +49,46 @@ GEMPVSSFWCAENChannelIVRunAvgPlotter::~GEMPVSSFWCAENChannelIVRunAvgPlotter() {}
 
 void GEMPVSSFWCAENChannelIVRunAvgPlotter::fill_dpidAliases()
 {
-  const std::string aliases=
-    std::string("48      CMS_GEM_Main/HVchan/Multi/GE-1/1/01/1/G3bot ")+
-    std::string("49      CMS_GEM_Main/HVchan/Multi/GE-1/1/01/1/G3top ")+
-    std::string("50      CMS_GEM_Main/HVchan/Multi/GE-1/1/01/1/G2bot ")+
-    std::string("51      CMS_GEM_Main/HVchan/Multi/GE-1/1/01/1/G2top ")+
-    std::string("52      CMS_GEM_Main/HVchan/Multi/GE-1/1/01/1/G1bot ")+
-    std::string("53      CMS_GEM_Main/HVchan/Multi/GE-1/1/01/1/G1top ")+
-    std::string("54      CMS_GEM_Main/HVchan/Multi/GE-1/1/01/1/Drift ")+
-    std::string("55      CMS_GEM_Main/HVchan/Multi/GE-1/1/01/2/G3bot ")+
-    std::string("56      CMS_GEM_Main/HVchan/Multi/GE-1/1/01/2/G3top ")+
-    std::string("57      CMS_GEM_Main/HVchan/Multi/GE-1/1/01/2/G2bot ")+
-    std::string("58      CMS_GEM_Main/HVchan/Multi/GE-1/1/01/2/G2top ")+
-    std::string("59      CMS_GEM_Main/HVchan/Multi/GE-1/1/01/2/G1bot ")+
-    std::string("60      CMS_GEM_Main/HVchan/Multi/GE-1/1/01/2/G1top ")+
-    std::string("61      CMS_GEM_Main/HVchan/Multi/GE-1/1/01/2/Drift ");
+  const int from_string=0;
+  if (from_string) {
+    const std::string aliases=
+      std::string("48      CMS_GEM_Main/HVchan/Multi/GE-1/1/01/1/G3bot ")+
+      std::string("49      CMS_GEM_Main/HVchan/Multi/GE-1/1/01/1/G3top ")+
+      std::string("50      CMS_GEM_Main/HVchan/Multi/GE-1/1/01/1/G2bot ")+
+      std::string("51      CMS_GEM_Main/HVchan/Multi/GE-1/1/01/1/G2top ")+
+      std::string("52      CMS_GEM_Main/HVchan/Multi/GE-1/1/01/1/G1bot ")+
+      std::string("53      CMS_GEM_Main/HVchan/Multi/GE-1/1/01/1/G1top ")+
+      std::string("54      CMS_GEM_Main/HVchan/Multi/GE-1/1/01/1/Drift ")+
+      std::string("55      CMS_GEM_Main/HVchan/Multi/GE-1/1/01/2/G3bot ")+
+      std::string("56      CMS_GEM_Main/HVchan/Multi/GE-1/1/01/2/G3top ")+
+      std::string("57      CMS_GEM_Main/HVchan/Multi/GE-1/1/01/2/G2bot ")+
+      std::string("58      CMS_GEM_Main/HVchan/Multi/GE-1/1/01/2/G2top ")+
+      std::string("59      CMS_GEM_Main/HVchan/Multi/GE-1/1/01/2/G1bot ")+
+      std::string("60      CMS_GEM_Main/HVchan/Multi/GE-1/1/01/2/G1top ")+
+      std::string("61      CMS_GEM_Main/HVchan/Multi/GE-1/1/01/2/Drift ");
 
-  std::stringstream ss(aliases);
-  int dpid;
-  std::string alias;
-  while (!ss.eof()) {
-    ss >> dpid >> alias;
-    boost::replace_all(alias, "CMS_GEM_Main/HVchan/Multi/", "HW-");
-    boost::replace_all(alias, "GE-1/1/01/", "GE1/1-");
-    m_dpidAliases[dpid]= alias;
+    std::stringstream ss(aliases);
+    int dpid;
+    std::string alias;
+    while (!ss.eof()) {
+      ss >> dpid >> alias;
+      boost::replace_all(alias, "CMS_GEM_Main/HVchan/Multi/", "HW-");
+      boost::replace_all(alias, "GE-1/1/01/", "GE1/1-");
+      m_dpidAliases[dpid]= alias;
+    }
+  }
+  else {
+    GEMPVSSFWCAENChannelReadDPIDs dpidReader( m_connectionString, m_connectionPset );
+    try {
+      GEMPVSSFWCAENChannelReadDPIDs::TDPIDAliasMap aliasMap= dpidReader.readData( "INT2R/CMS_GEM_PVSS_TEST_COND" );
+    }
+    catch (const std::exception &e) {
+      edm::LogInfo( "GEMPVSSFWCAENChannelIVRunAvgPlotter" )
+	<< "[" << "GEMPVSSFWCAENChannelIVRunAvgPlotter::" << __func__ << "]:"
+	<< "got error\n"
+	<< "\tOriginal Exception: " << e.what() << std::endl;
+      throw std::runtime_error("dpidReader failed");
+    }
   }
 }
 

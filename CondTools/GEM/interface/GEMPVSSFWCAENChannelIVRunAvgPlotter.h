@@ -40,6 +40,7 @@ class GEMPVSSFWCAENChannelIVRunAvgPlotter : public popcon::PopConSourceHandler<G
   // for reading from omds
   std::string m_runinfo_schema;
   std::string m_pvss_schema;
+  std::string m_alias_connectionString;
   std::string m_connectionString;
   edm::ParameterSet m_connectionPset;
   std::map<int,std::vector<TH1F*> > m_h1runAvgV; // run-averaged values

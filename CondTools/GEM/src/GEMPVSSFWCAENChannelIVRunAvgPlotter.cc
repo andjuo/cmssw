@@ -1,7 +1,7 @@
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "CondTools/GEM/interface/GEMPVSSFWCAENChannelIVRunAvgPlotter.h"
 #include "CondTools/GEM/interface/GEMPVSSFWCAENChannelIVRunAvgReadDBs.h"
-#include "CondTools/GEM/interface/GEMPVSSFWCAENChannelReadDIPDs.h"
+#include "CondTools/GEM/interface/GEMPVSSFWCAENChannelReadDPIDs.h"
 #include <TH1F.h>
 #include <TFile.h>
 #include <TObjString.h>
@@ -30,6 +30,7 @@ GEMPVSSFWCAENChannelIVRunAvgPlotter::GEMPVSSFWCAENChannelIVRunAvgPlotter( const 
   ,m_saveToDB( pset.getUntrackedParameter<int>( "saveToDB", 0 ) )
   ,m_runinfo_schema( pset.getUntrackedParameter<std::string>( "RunInfoSchema", "CMS_RUNINFO" ) )
   ,m_pvss_schema( pset.getUntrackedParameter<std::string>( "GEMPVSSSchema", "CMS_GEM_PVSS_COND") )
+  ,m_alias_connectionString( pset.getUntrackedParameter<std::string>( "GEMDPIDAliasConnection", "oracle://INT2R/CMS_GEM_PVSS_TEST_COND") )
   ,m_connectionString( pset.getParameter<std::string>( "connect" ) )
   ,m_connectionPset( pset.getParameter<edm::ParameterSet>( "DBParameters" ) )
   ,m_h1runAvgV()
@@ -72,15 +73,21 @@ void GEMPVSSFWCAENChannelIVRunAvgPlotter::fill_dpidAliases()
     std::string alias;
     while (!ss.eof()) {
       ss >> dpid >> alias;
-      boost::replace_all(alias, "CMS_GEM_Main/HVchan/Multi/", "HW-");
-      boost::replace_all(alias, "GE-1/1/01/", "GE1/1-");
+      boost::replace_all(alias, "CMS_GEM_Main/HVchan/Multi/", "HV-");
+      //boost::replace_all(alias, "GE-1/1/01/", "GE-1/1-");
+      //boost::replace_all(alias, "GE1/1/01/", "GE1/1-");
       m_dpidAliases[dpid]= alias;
     }
   }
   else {
-    GEMPVSSFWCAENChannelReadDPIDs dpidReader( m_connectionString, m_connectionPset );
+    GEMPVSSFWCAENChannelReadDPIDs dpidReader( m_alias_connectionString, m_connectionPset );
+    //GEMPVSSFWCAENChannelReadDPIDs dpidReader( "oracle://INT2R/CMS_GEM_PVSS_TEST_COND", m_connectionPset );
+    GEMPVSSFWCAENChannelReadDPIDs::TDPIDAliasMap aliasMap;
     try {
-      GEMPVSSFWCAENChannelReadDPIDs::TDPIDAliasMap aliasMap= dpidReader.readData( "INT2R/CMS_GEM_PVSS_TEST_COND" );
+      //aliasMap = dpidReader.readData( "CMS_GEM_PVSS_TEST_COND" );
+      size_t pos = m_alias_connectionString.find_last_of('/');
+      std::string schemaName(m_alias_connectionString.substr(pos+1, m_alias_connectionString.size()));
+      aliasMap = dpidReader.readData( schemaName );
     }
     catch (const std::exception &e) {
       edm::LogInfo( "GEMPVSSFWCAENChannelIVRunAvgPlotter" )
@@ -88,6 +95,18 @@ void GEMPVSSFWCAENChannelIVRunAvgPlotter::fill_dpidAliases()
 	<< "got error\n"
 	<< "\tOriginal Exception: " << e.what() << std::endl;
       throw std::runtime_error("dpidReader failed");
+    }
+
+    // keep only HVchan aliases
+    for ( auto it : aliasMap ) {
+      if (it.second.find("Main/HVchan")!=std::string::npos) {
+	std::string alias= it.second;
+	boost::replace_all(alias, "CMS_GEM_Main/HVchan/Multi/", "HV-");
+	//boost::replace_all(alias, "GE-1/1/01/", "GE-1/1-");
+	//boost::replace_all(alias, "GE1/1/01/", "GE1/1-");
+	m_dpidAliases[ it.first ] = alias;
+	std::cout << " keep " << it.first << "\t" << it.second << "; made alias=<" << alias << ">\n";
+      }
     }
   }
 }

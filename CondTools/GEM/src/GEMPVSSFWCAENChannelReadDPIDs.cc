@@ -52,7 +52,7 @@ GEMPVSSFWCAENChannelReadDPIDs::readData(const std::string & dpid_schema )
     query->addToOutputList( "DP_NAME2ID.ID", "DPID" );
     query->addToOutputList( "TEST2.ALIAS" , "ALIAS" );
 
-    std::string condition = "TEST2.DPE_NAME=DP_NAME2ID.DPNAME";
+    std::string condition = "TEST2.DPE_NAME=(DP_NAME2ID.DPNAME||'.')";
     coral::AttributeList conditionData;
     query->setCondition( condition, conditionData );
     edm::LogInfo( "GEMPVSSFWCAENChannelIVRunAvgReader") << " calling query->execute()" << std::endl;
@@ -62,13 +62,15 @@ GEMPVSSFWCAENChannelReadDPIDs::readData(const std::string & dpid_schema )
     std::ostringstream oss;
     while ( cursor.next() ) {
       const coral::AttributeList& row = cursor.currentRow();
-      int dpid= row["DPID"].data<int>();
+      float dpid_f= row["DPID"].data<float>();
+      int dpid= static_cast<int>(dpid_f);
       std::string alias=row["ALIAS"].data<std::string>();
       temp_aliasMap[dpid]= alias;
 
-      oss << "  " << temp_aliasMap.size() << " dpid=" << dpid << " alias=" << alias << "\n";
+      //oss << "  " << temp_aliasMap.size() << " dpid=" << dpid << "(" << dpid_f << ") alias=" << alias << "\n";
     }
-    edm::LogInfo( "GEMPVSSFWCAENChannelIVRunAvgRead" ) << "[GEMPVSSFWCAENChannelReadDPIDs::" << __func__ << "]: Loaded aliases:\n" << oss.str() << std::endl;
+    if (oss.str().size())
+      edm::LogInfo( "GEMPVSSFWCAENChannelIVRunAvgRead" ) << "[GEMPVSSFWCAENChannelReadDPIDs::" << __func__ << "]: Loaded aliases:\n" << oss.str() << std::endl;
 
     session->transaction().commit();
   }
@@ -78,7 +80,7 @@ GEMPVSSFWCAENChannelReadDPIDs::readData(const std::string & dpid_schema )
 			 << e.what() << std::endl;
   }
 
-  if (1) {
+  if (0) {
     std::ostringstream oss;
     oss << "\n Test temp_aliasMap:\n";
     for ( auto it : temp_aliasMap ) {

@@ -1,5 +1,5 @@
-#ifndef CondTools_GEM_GEMPVSSFWCAENChannelIVRunRunAvgReadDBs_h
-#define CondTools_GEM_GEMPVSSFWCAENChannelIVRunRunAvgReadDBs_h
+#ifndef CondTools_GEM_GEMPVSSFWCAENChannelIVRunAvgReadDBs_h
+#define CondTools_GEM_GEMPVSSFWCAENChannelIVRunAvgReadDBs_h
 
 #include "CondFormats/GEMObjects/interface/GEMPVSSFWCAENChannelIVRunAvg.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"

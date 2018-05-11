@@ -197,13 +197,16 @@ int GEMIVRunAvgPlotter__fillRunTrendHistos(const std::vector<GEMPVSSFWCAENChanne
 
   // assume sorted list
   int oldDPID=0;
-  TH1F *h1=NULL;
+  TH1F *h1=NULL; // the bin-averaged value
+  TH1F *h1count=NULL, *h1sq=NULL; // helpers
+  unsigned int hidxStart=h1V.size();
+  std::vector<TH1F*> h1countV, h1sqV;
   for ( auto it : data ) {
     //const boost::posix_time::ptime time0= boost::posix_time::from_time_t(0);
     //const TDatime dt_time0(convert2Datime(time0));
 
     if (it.dpid!=oldDPID) {
-      // create hnew histo
+      // create hnew histos
       std::stringstream shname, shtitle;
       shname << baseTag << it.dpid;
       std::string titleBase=baseTag.substr(3,baseTag.size());
@@ -219,10 +222,16 @@ int GEMIVRunAvgPlotter__fillRunTrendHistos(const std::vector<GEMPVSSFWCAENChanne
       shtitle << ";time; obs " << it.type.getName();
       TDatime dt_tic(convert2Datime(tic));
       TDatime dt_tac(convert2Datime(tac));
-      h1= new TH1F(shname.str().c_str(),shtitle.str().c_str(),100, dt_tic.Convert(),dt_tac.Convert());
-      if (!h1) return 0;
-      h1V.push_back(h1); // store the histogram
+      const int nBins=100;
+      h1= new TH1F(shname.str().c_str(),shtitle.str().c_str(),nBins, dt_tic.Convert(),dt_tac.Convert());
+      h1count= new TH1F((shname.str()+"count").c_str(),(shtitle.str()+"count").c_str(),nBins, dt_tic.Convert(),dt_tac.Convert());
+      h1sq= new TH1F((shname.str()+"sq").c_str(),(shtitle.str()+"sq").c_str(),nBins, dt_tic.Convert(),dt_tac.Convert());
 
+      if (!h1 || !h1count || !h1sq) return 0;
+
+      h1V.push_back(h1); // store the histogram
+      h1count->SetDirectory(0);   h1countV.push_back(h1count);
+      h1sq->SetDirectory(0);   h1sqV.push_back(h1sq);
       h1->SetDirectory(0);
       h1->GetXaxis()->SetTimeDisplay(1);
       //std::string tf("%y-%b-%d %H:%M%F1970-01-01 00:00:00"); // +"%F" + time0str
@@ -237,10 +246,44 @@ int GEMIVRunAvgPlotter__fillRunTrendHistos(const std::vector<GEMPVSSFWCAENChanne
 
     // put the value into the histogram
     TDatime dt_pt(convert2Datime( it.timeStamp ));
-    int idx= h1->Fill( dt_pt.Convert(), it.value );
-    h1->SetBinError( idx, 1e-6 ); // prevent hist
+    double ts = dt_pt.Convert();
+    h1count->Fill( ts, 1 );
+    h1->Fill( ts, it.value );
+    h1sq->Fill( ts, it.value*it.value );
     oldDPID = it.dpid;
   }
+
+  // finish calculation
+  for (unsigned int ih=hidxStart; ih<h1V.size(); ih++) {
+    TH1F *h1= h1V[ih];
+    TH1F *h1c= h1countV[ih-hidxStart];
+    TH1F *h1sq= h1sqV[ih-hidxStart];
+    if (!h1 || !h1c || !h1sq) {
+      std::cout << "code error: null pointer\n";
+      return 0;
+    }
+    for (int ibin=1; ibin<=h1->GetNbinsX(); ibin++) {
+      if (h1c->GetBinContent(ibin)!=0) {
+	float avg= h1->GetBinContent(ibin)/h1c->GetBinContent(ibin);
+	float rms= h1sq->GetBinContent(ibin)/h1c->GetBinContent(ibin) - avg*avg;
+	if (rms>0) rms=sqrt(rms);
+	else {
+	  if (-rms/avg<1e-4) rms=-1e-6; // calculation accuracy
+	  else {
+	    if (fabs(rms)>1e-4) {
+	      std::cout << "negative rms ibin=" << ibin << ", avg=" << avg << ", rmssq=" << rms << " h1->GetName()=" << h1->GetName() << "\n";
+	    }
+	    rms=sqrt(-rms);
+	  }
+	}
+	h1->SetBinContent(ibin, avg);
+	h1->SetBinError( ibin, rms);
+      }
+    }
+    delete h1c;  h1countV[ih-hidxStart]=NULL;
+    delete h1sq;  h1sqV[ih-hidxStart]=NULL;
+  }
+
   return 1;
 }
 

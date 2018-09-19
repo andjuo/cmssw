@@ -18,6 +18,7 @@
 #include "Geometry/GEMGeometry/interface/GEMRegion.h"
 #include <vector>
 #include <map>
+#include <iostream>
 
 class GeomDetType;
 
@@ -107,6 +108,9 @@ class GEMGeometry : public TrackingGeometry {
 
   /// Add a GEMEtaPartition  to the Geometry
   void add(const GEMEtaPartition* etaPartition);
+
+  // print fields
+  void print(std::ofstream &out = std::cout) const;
 
  private:
   DetContainer theEtaPartitions;

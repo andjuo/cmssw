@@ -1,0 +1,35 @@
+#ifndef GEMMessager_H
+#define GEMMessager_H
+
+//#include "FWCore/PluginManager/interface/ModuleDef.h"
+#include "FWCore/Framework/interface/Frameworkfwd.h"
+#include "FWCore/Framework/interface/EDAnalyzer.h"
+#include "FWCore/Framework/interface/Event.h"
+#include "FWCore/Framework/interface/MakerMacros.h"
+#include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include <iostream>
+#include <string>
+
+//using namespace std;
+
+class GEMMessager : public edm::EDAnalyzer
+{
+public:
+explicit GEMMessager( const edm::ParameterSet& );
+void analyze(const edm::Event& e, const edm::EventSetup&) override
+  { if (printMsg) std::cout << "GEMMessager " << message << std::endl; }
+
+private:
+  std::string message;
+  int printMsg;
+};
+
+GEMMessager::GEMMessager(const edm::ParameterSet & cfg)
+{
+  message = cfg.getParameter<std::string>("message");
+  printMsg = cfg.getParameter<int>("printMsg");
+}
+
+DEFINE_FWK_MODULE (GEMMessager) ;
+#endif
+

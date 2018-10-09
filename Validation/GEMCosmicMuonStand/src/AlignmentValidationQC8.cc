@@ -38,6 +38,8 @@
 
 #include <iomanip>
 
+#include "Geometry/GEMGeometry/interface/GEMGeometryPrint.h"
+
 #include <TCanvas.h>
 #include <Math/Vector3D.h>
 
@@ -125,7 +127,7 @@ void AlignmentValidationQC8::bookHistograms(DQMStore::IBooker & ibooker, edm::Ru
     printf("Begin of AlignmentValidationQC8::bookHistograms() at %s\n", asctime(localtime(&rawTime)));
     GEMGeometry_ = initGeometry(iSetup);
     if ( GEMGeometry_ == nullptr) return ;
-    GEMGeometry_->print();
+    printGEMGeometry(*GEMGeometry_,std::cout);
     
     const std::vector<const GEMSuperChamber*>& superChambers_ = GEMGeometry_->superChambers();
     for (auto sch : superChambers_)

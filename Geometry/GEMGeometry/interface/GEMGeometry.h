@@ -18,7 +18,6 @@
 #include "Geometry/GEMGeometry/interface/GEMRegion.h"
 #include <vector>
 #include <map>
-#include <iostream>
 
 class GeomDetType;
 
@@ -52,8 +51,10 @@ class GEMGeometry : public TrackingGeometry {
   // Return the pointer to the GeomDet corresponding to a given DetId
   const GeomDet* idToDet(DetId) const override;
 
-
   //---- Extension of the interface
+
+  // Return to theMap
+  const mapIdToDet& getIdToDetMap() const { return theMap; }
 
   /// Return a vector of all GEM regions
   const std::vector<const GEMRegion*>& regions() const;
@@ -108,9 +109,6 @@ class GEMGeometry : public TrackingGeometry {
 
   /// Add a GEMEtaPartition  to the Geometry
   void add(const GEMEtaPartition* etaPartition);
-
-  // print fields
-  void print(std::ofstream &out = std::cout) const;
 
  private:
   DetContainer theEtaPartitions;

@@ -84,6 +84,9 @@ void XMLIdealGeometryESSource::setIntervalFor(const edm::eventsetup::EventSetupR
 }
 
 
+void XMLIdealGeometryESSource::addGeoFile(const std::string &rel_fname)
+{ geoConfig_.addFile(rel_fname); }
+
 #include "FWCore/Framework/interface/SourceFactory.h"
 
 

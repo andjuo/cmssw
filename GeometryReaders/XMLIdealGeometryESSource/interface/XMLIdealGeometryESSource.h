@@ -22,11 +22,14 @@ public:
     std::unique_ptr<DDCompactView> produceGeom(const IdealGeometryRecord &);
     std::unique_ptr<DDCompactView> produceMagField(const IdealMagneticFieldRecord &);
     std::unique_ptr<DDCompactView> produce();
+
 protected:
     void setIntervalFor(const edm::eventsetup::EventSetupRecordKey &,
 			const edm::IOVSyncValue &,edm::ValidityInterval &) override;
     XMLIdealGeometryESSource(const XMLIdealGeometryESSource &) = delete;
     const XMLIdealGeometryESSource & operator=(const XMLIdealGeometryESSource &) = delete;
+
+    void addGeoFile(const std::string &rel_fname);
 
  private:
     std::string rootNodeName_;

@@ -1,6 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
-from Geometry.MuonCommonData.gemboxFull_cfi import *
+#from Geometry.MuonCommonData.gembox_cfi import *
+from Geometry.MuonCommonData.gemboxCosmicStand_cfi import *
 
 from Geometry.GEMGeometryBuilder.gemGeometry_cfi import *
 from RecoMuon.DetLayers.muonDetLayerGeometry_cfi import *

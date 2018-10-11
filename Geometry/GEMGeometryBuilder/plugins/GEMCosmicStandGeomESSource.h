@@ -7,28 +7,46 @@
  *
  *  \author A. Juodagalvis - Vilnius University, Oct 2018
  */
+// Based on GeometryReaders/XMLIdealGeometryESSource/interface/XMLIdealGeometryESSource.h
 
+#include "FWCore/Framework/interface/ESProducer.h"
+#include "FWCore/Framework/interface/EventSetupRecordIntervalFinder.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "GeometryReaders/XMLIdealGeometryESSource/interface/XMLIdealGeometryESSource.h"
+//#include "GeometryReaders/XMLIdealGeometryESSource/interface/XMLIdealGeometryESSource.h"
+#include "GeometryReaders/XMLIdealGeometryESSource/interface/GeometryConfiguration.h"
+#include "DetectorDescription/Core/interface/DDCompactView.h"
+#include "Geometry/Records/interface/IdealGeometryRecord.h"
 
 #include <memory>
 #include <string>
 
-class GEMCosmicStandGeomESSource : public XMLIdealGeometryESSource
+class GEMCosmicStandGeomESSource : public edm::ESProducer, 
+                                   public edm::EventSetupRecordIntervalFinder
+// public XMLIdealGeometryESSource
 {
  public:
-  /// Constructor
   GEMCosmicStandGeomESSource(const edm::ParameterSet & p);
-  
-  /// Destructor
   ~GEMCosmicStandGeomESSource() override;
-  
+
   /// Produce XMLIdealGeometry record with GEM Cosmic Stand info embeded
+  std::unique_ptr<DDCompactView> produceGeom(const IdealGeometryRecord &);
   std::unique_ptr<DDCompactView> produce();
-  
- private:
+
+  void addGeoFile(const std::string &rel_fname);
+
+protected:
+  void setIntervalFor(const edm::eventsetup::EventSetupRecordKey &,
+		      const edm::IOVSyncValue &,edm::ValidityInterval &) override;
+  //GEMCosmicStandGeomESSource(const GEMCosmicStandGeomESSource &) = delete;
+  //const GEMCosmicStandESSource & operator=(const GEMCosmicStandGeomESSource &) = delete;
+
+private:
   // description of superchambers
   std::vector<std::string> spChmbrNames_;
+  // from XMLIdealGeometryESSource
+  std::string rootNodeName_;
+  bool userNS_;
+  GeometryConfiguration geoConfig_;
 
 };
 #endif

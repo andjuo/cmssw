@@ -16,8 +16,7 @@ class GEMMessager : public edm::EDAnalyzer
 {
 public:
 explicit GEMMessager( const edm::ParameterSet& );
-void analyze(const edm::Event& e, const edm::EventSetup&) override
-  { if (printMsg) std::cout << "GEMMessager " << message << std::endl; }
+void analyze(const edm::Event& e, const edm::EventSetup&) override;
 
 private:
   std::string message;
@@ -28,7 +27,13 @@ GEMMessager::GEMMessager(const edm::ParameterSet & cfg)
 {
   message = cfg.getParameter<std::string>("message");
   printMsg = cfg.getParameter<int>("printMsg");
+  std::cout << "GEMMessager constructor: printMsg=" << printMsg
+	    << "msg=" << message << std::endl;
 }
+
+void GEMMessager::analyze(const edm::Event& e, const edm::EventSetup&)
+{ if (printMsg) std::cout << "GEMMessager " << message << std::endl; }
+
 
 DEFINE_FWK_MODULE (GEMMessager) ;
 #endif

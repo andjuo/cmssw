@@ -73,8 +73,8 @@ if options.messageLevel == 3:
 
 process.source = cms.Source( "EmptyIOVSource",
                              timetype = cms.string( 'runnumber' ),
-                             firstValue = cms.uint64( options.runNumber ),
-                             lastValue = cms.uint64( options.runNumber + options.numberOfRuns ),
+                             firstValue = cms.uint64( options.runNumber - 1 ),
+                             lastValue = cms.uint64( options.runNumber + options.numberOfRuns - 1 ),
                              interval = cms.uint64( 1 ) )
 
 process.PoolDBOutputService = cms.Service( "PoolDBOutputService",
@@ -91,8 +91,9 @@ process.WriteInDB = cms.EDAnalyzer("GEMQC8GeomDBWriter",
     record = cms.string( 'GEMQC8GeomRcd' ),
     loggingOn = cms.untracked.bool( False ),
     Source = cms.PSet( SourceDBConnection,
-                       runNumber = options.runNumber,
-                       WriteDummy = cms.untracked.int32(1),#fakeData for testing
+                       runNumber = cms.int32( options.runNumber ),
+                       DebugMode = cms.untracked.int32(1),
+                       WriteDummy = cms.untracked.int32(0),#fakeData for testing
                        printValues = cms.untracked.bool( True ), # whether to print obtained values
                    )
 )

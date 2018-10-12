@@ -28,10 +28,12 @@ namespace popcon
     cond::persistency::Session session;
     std::string m_name;
     int m_dummy;
+    int m_debugMode;
     std::string m_connect;
     std::string m_authpath;
     edm::ParameterSet m_connectionPset;
     int m_runNumber;
+    int m_allowRollBack;
     bool m_printValues;
   };
 }

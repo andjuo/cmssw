@@ -4,45 +4,43 @@
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 
-//#include "RelationalAccess/ISessionProxy.h"
-//#include "RelationalAccess/ITransaction.h"
 #include "RelationalAccess/ISchema.h"
-//#include "RelationalAccess/IColumn.h"
 #include "RelationalAccess/IQuery.h"
 #include "RelationalAccess/ICursor.h"
 #include "CoralBase/AttributeList.h"
 #include "CoralBase/Attribute.h"
 //#include "CoralBase/AttributeSpecification.h"
 
-//#include <boost/date_time/posix_time/posix_time.hpp>
-
-#include <fstream>
-//#include <cstdlib>
+//#include <fstream>
 #include <vector>
-
 #include <sstream>
 
-//#include <DataFormats/MuonDetId/interface/GEMDetId.h>
 
-inline void HERE(std::string msg)
-{ std::cout << msg << std::endl; }
+//inline void HERE(std::string msg)
+//{ std::cout << msg << std::endl; }
 
 
 popcon::GEMQC8GeomSourceHandler::GEMQC8GeomSourceHandler( const edm::ParameterSet& ps ):
   m_name( ps.getUntrackedParameter<std::string>( "name", "GEMQC8GeomSourceHandler" ) ),
   m_dummy( ps.getUntrackedParameter<int>( "WriteDummy", 0 ) ),
+  m_debugMode( ps.getUntrackedParameter<int>( "DebugMode", 0 ) ),
   m_connect( ps.getParameter<std::string>( "connect" ) ),
   m_connectionPset( ps.getParameter<edm::ParameterSet>( "DBParameters" ) ),
   m_runNumber( ps.getParameter<int>("runNumber") ),
+  m_allowRollBack( ps.getUntrackedParameter<int>( "AllowRollBack", 1 ) ),
   m_printValues( ps.getUntrackedParameter<bool>( "printValues", false ) )
 {
-  std::cout << "GEMQC8GeomSourceHandler constructor\n";
-  std::cout << "  * m_name = " << m_name << "\n";
-  std::cout << "  * m_dummy= " << m_dummy << "\n";
-  std::cout << "  * m_connect= " << m_connect << "\n";
-  std::cout << "  * DBParameters= " << m_connectionPset << "\n";
-  std::cout << "  * m_runNumber=" << m_runNumber << "\n";
-  std::cout << "  * m_printValues=" << m_printValues << "\n";
+  if (m_printValues) {
+    std::cout << "GEMQC8GeomSourceHandler constructor\n";
+    std::cout << "  * m_name = " << m_name << "\n";
+    std::cout << "  * m_dummy= " << m_dummy << "\n";
+    std::cout << "  * m_debugMode= " << m_debugMode << "\n";
+    std::cout << "  * m_connect= " << m_connect << "\n";
+    std::cout << "  * DBParameters= " << m_connectionPset << "\n";
+    std::cout << "  * m_runNumber=" << m_runNumber << "\n";
+    std::cout << "  * m_allowRollBack=" << m_allowRollBack << "\n";
+    std::cout << "  * m_printValues=" << m_printValues << "\n";
+  }
 }
 
 popcon::GEMQC8GeomSourceHandler::~GEMQC8GeomSourceHandler()
@@ -52,7 +50,7 @@ popcon::GEMQC8GeomSourceHandler::~GEMQC8GeomSourceHandler()
 
 void popcon::GEMQC8GeomSourceHandler::getNewObjects()
 {
-  std::cout << "GEMQC8GeomSourceHandler getNewObjects\n";
+  //std::cout << "GEMQC8GeomSourceHandler getNewObjects\n";
 
   edm::LogInfo( "GEMQC8GeomSourceHandler" ) << "[" << "GEMQC8GeomSourceHandler::" << __func__ << "]:" << m_name << ": "
                                          << "BEGIN" << std::endl;
@@ -80,13 +78,13 @@ void popcon::GEMQC8GeomSourceHandler::getNewObjects()
   }
   else {
     std::cout << "\n putting dummy data\n\n";
-    qc8geom->run_number_ = 0;
+    qc8geom->run_number_ = m_runNumber;
     for (unsigned int i=0; i<15; i++) {
       qc8geom->chSerialNums_.push_back("L");
       std::stringstream ss;
       ss << "c" << (i/5+1) << "_r" << (i%5+1);
       qc8geom->chPositions_.push_back(ss.str());
-      qc8geom->chGasFlow_.push_back(1.23);
+      qc8geom->chGasFlow_.push_back(999.+1e-3*m_runNumber);
     }
   }
 
@@ -134,60 +132,75 @@ void popcon::GEMQC8GeomSourceHandler::DisconnectOnlineDB()
 
 void popcon::GEMQC8GeomSourceHandler::readGEMQC8Geom()
 {
-  std::cout << "\nGEMQC8GeomSourceHandler readGEMQC8Geom" << std::endl;
+  //std::cout << "\nGEMQC8GeomSourceHandler readGEMQC8Geom" << std::endl;
 
   session.transaction().start( true );
-  std::cout << "transaction started" << std::endl;
+  //std::cout << "transaction started" << std::endl;
   coral::ISchema& schema = session.nominalSchema();
-  std::cout << "got schema with name <" << schema.schemaName() << ">" << std::endl;
+  //std::cout << "got schema with name <" << schema.schemaName() << ">" << std::endl;
 
-  std::cout << std::endl <<"GEMQC8GeomSourceHandler: start to build GEMQC8Geom..." << std::flush << std::endl << std::endl;
 
-  coral::IQuery* query1 = schema.newQuery();
-  query1->addToTableList( "QC8_GEM_STAND_GEOMETRY_VIEW_RH");
-  query1->addToOutputList("QC8_GEM_STAND_GEOMETRY_VIEW_RH.CH_SERIAL_NUMBER", "CH_SERIAL_NUMBER");
-  query1->addToOutputList("QC8_GEM_STAND_GEOMETRY_VIEW_RH.POSITION", "POSITION");
-  query1->addToOutputList("QC8_GEM_STAND_GEOMETRY_VIEW_RH.FLOW_METER", "FLOW_METER");
-  query1->addToOutputList("QC8_GEM_STAND_GEOMETRY_VIEW_RH.RUN_NUMBER", "RUN_NUMBER");
+  // if m_allowRollBack=1, we will decrease the run number, until we find a record
+  int searchRun= m_runNumber;
 
-  coral::AttributeList conditionData; // empty
-  std::string condition;
-  {
-    std::stringstream ssCond;
-    ssCond << "RUN_NUMBER = " << m_runNumber;
-    condition = ssCond.str();
-  }
+  do {
+    coral::IQuery* query1 = schema.newQuery();
+    query1->addToTableList( "QC8_GEM_STAND_GEOMETRY_VIEW_RH");
+    query1->addToOutputList("QC8_GEM_STAND_GEOMETRY_VIEW_RH.CH_SERIAL_NUMBER", "CH_SERIAL_NUMBER");
+    query1->addToOutputList("QC8_GEM_STAND_GEOMETRY_VIEW_RH.POSITION", "POSITION");
+    query1->addToOutputList("QC8_GEM_STAND_GEOMETRY_VIEW_RH.FLOW_METER", "FLOW_METER");
+    query1->addToOutputList("QC8_GEM_STAND_GEOMETRY_VIEW_RH.RUN_NUMBER", "RUN_NUMBER");
 
-  // IMon values
-  query1->setCondition( condition, conditionData );
-  coral::ICursor& cursor = query1->execute();
-  std::cout<<"cursor OK"<<std::endl;
-  qc8geom->run_number_ = m_runNumber;
-  while ( cursor.next() ) {
-    const coral::AttributeList& row = cursor.currentRow();
-    try {
-      int db_runnumber = row["RUN_NUMBER"].data<int>();
-      std::string db_chSerNum = row["CH_SERIAL_NUMBER"].data<std::string>();
-      std::string db_chPos = row["POSITION"].data<std::string>();
-      float db_flow = row["FLOW_METER"].data<float>();
+    coral::AttributeList conditionData; // empty
+    std::string condition;
+    {
+      std::stringstream ssCond;
+      ssCond << "RUN_NUMBER = " << searchRun;
+      condition = ssCond.str();
+    }
 
-      qc8geom->chSerialNums_.push_back(db_chSerNum);
-      qc8geom->chPositions_.push_back(db_chPos);
-      qc8geom->chGasFlow_.push_back(db_flow);
+    // get values
+    query1->setCondition( condition, conditionData );
+    coral::ICursor& cursor = query1->execute();
+    std::cout<<"cursor OK"<<std::endl;
+    qc8geom->run_number_ = searchRun;
+    while ( cursor.next() ) {
+      const coral::AttributeList& row = cursor.currentRow();
+      try {
+	int db_runnumber = row["RUN_NUMBER"].data<long long>();
+	std::string db_chSerNum = row["CH_SERIAL_NUMBER"].data<std::string>();
+	std::string db_chPos = row["POSITION"].data<std::string>();
+	float db_flow = row["FLOW_METER"].data<float>();
 
-      if (m_printValues) {
-	std::cout << "db: " << db_runnumber << ", " << db_chSerNum
-		  << ", " << db_chPos << ", " << db_flow << std::endl;
+	if (m_debugMode) db_flow+= 1e-3*searchRun;
+
+	qc8geom->chSerialNums_.push_back(db_chSerNum);
+	qc8geom->chPositions_.push_back(db_chPos);
+	qc8geom->chGasFlow_.push_back(db_flow);
+
+	if (m_printValues) {
+	  std::cout << "db: " << db_runnumber << ", " << db_chSerNum
+		    << ", " << db_chPos << ", " << db_flow << std::endl;
+	}
+      }
+      catch ( const std::exception & e ) {
+	std::cout << "exception " << e.what() << " caught\n";
+	//continue;
       }
     }
-    catch ( const std::exception & e ) {
-      std::cout << "exception " << e.what() << " caught\n";
-      //continue;
+
+
+    delete query1;
+
+    // check if we have to loop
+    searchRun--;
+    if (m_allowRollBack && (qc8geom->chSerialNums_.size()==0)) {
+      edm::LogInfo( "GEMQC8GeomSourceHandler" )
+	<< "[" << "GEMQC8GeomSourceHandler::" << __func__ << "]:" << m_name << ": "
+	<< "failed to find runNumber=" << (searchRun+1) << std::endl;
     }
-  }
+  } while (!qc8geom->chSerialNums_.size() && m_allowRollBack && (searchRun>0));
 
-  delete query1;
-
-  std::cout << "GEMQC8GeomSourceHandler readGEMQC8Geom done" << std::endl;
+  //std::cout << "GEMQC8GeomSourceHandler readGEMQC8Geom done" << std::endl;
 
 }

@@ -1,5 +1,5 @@
-#ifndef Geometry_GEMGeometry_GEMCosmicStandGeomESSource_h
-#define Geometry_GEMGeometry_GEMCosmicStandGeomESSource_h
+#ifndef Geometry_GEMGeometryBuilders_plugins_GEMCosmicStandGeomESSource_h
+#define Geometry_GEMGeometryBuilders_plugins_GEMCosmicStandGeomESSource_h
 
 /** \class GEMCosmicStandGeomESSource
  * 

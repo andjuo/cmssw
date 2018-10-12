@@ -34,6 +34,7 @@ using namespace edm;
 //#include "GeometryReaders/XMLIdealGeometryESSource/interface/XMLIdealGeometryESSource.h"
 #include "Geometry/GEMGeometryBuilder/plugins/GEMCosmicStandGeomESSource.h"
 #include <iostream>
+#include <sstream>
 
 
 GEMCosmicStandGeomESSource::GEMCosmicStandGeomESSource(const edm::ParameterSet & p) :
@@ -59,6 +60,20 @@ std::unique_ptr<DDCompactView>
 GEMCosmicStandGeomESSource::produceGeom(const IdealGeometryRecord &)
 {
   std::cout << "\n\ncalled GEMCosmicStandGeomESSource::produceGeom\n\n";
+
+  for (unsigned int i=0; i<spChmbrNames_.size(); i++) {
+    char chamberSize='0';
+    if (spChmbrNames_.at(i).find('L') != std::string::npos) chamberSize='L';
+    if (spChmbrNames_.at(i).find('S') != std::string::npos) chamberSize='S';
+    if (chamberSize == '0') continue;
+
+    std::stringstream ss;
+    ss << "Geometry/MuonCommonData/data/GEMQC8/gem11" << chamberSize
+       << "_c" << (i/5+1) << "_r" << (i%5+1) << ".xml";
+    std::cout << "GEMCosmicStandGeomESSource::produceGeom: adding file " << ss.str() << std::endl;
+    geoConfig_.addFile(ss.str());
+  }
+
   return GEMCosmicStandGeomESSource::produce();
 }
 

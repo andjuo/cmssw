@@ -127,7 +127,7 @@ void AlignmentValidationQC8::bookHistograms(DQMStore::IBooker & ibooker, edm::Ru
     printf("Begin of AlignmentValidationQC8::bookHistograms() at %s\n", asctime(localtime(&rawTime)));
     GEMGeometry_ = initGeometry(iSetup);
     if ( GEMGeometry_ == nullptr) return ;
-    printGEMGeometry(*GEMGeometry_,std::cout);
+    //printGEMGeometry(*GEMGeometry_,std::cout);
     
     const std::vector<const GEMSuperChamber*>& superChambers_ = GEMGeometry_->superChambers();
     for (auto sch : superChambers_)

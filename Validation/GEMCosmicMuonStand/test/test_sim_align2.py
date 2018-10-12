@@ -114,6 +114,14 @@ process.configurationMetadata = cms.untracked.PSet(
     version = cms.untracked.string('$Revision: 1.19 $')
 )
 
+process.msgStart = cms.EDAnalyzer('GEMMessager',
+                                  message = cms.string('start'),
+                                  printMsg = cms.int32(1))
+process.msgOutputStart = process.msgStart.clone( message = cms.string('outputStart') )
+process.msgOutputEnd = process.msgStart.clone( message = cms.string('outputEnd') )
+process.msgGenStart = process.msgStart.clone( message = cms.string('genStart') )
+process.msgGenEnd = process.msgStart.clone( message = cms.string('genEnd') )
+
 # Output definition
 process.FEVTDEBUGHLToutput = cms.OutputModule("PoolOutputModule",
     SelectEvents = cms.untracked.PSet(
@@ -264,7 +272,8 @@ process.TFileService = cms.Service("TFileService",
 
 process.rawDataCollector.RawCollectionList = cms.VInputTag(cms.InputTag("gemPacker"))
 # Path and EndPath definitions
-process.generation_step = cms.Path(process.generator+process.pgen)
+#process.generation_step = cms.Path(process.generator+process.pgen)
+process.generation_step = cms.Path(process.msgGenStart + process.generator+process.pgen + process.msgGenEnd)
 process.simulation_step = cms.Path(process.psim)
 process.digitisation_step = cms.Path(process.mix+process.simMuonGEMDigis)
 process.reconstruction_step = cms.Path(process.gemPacker+process.rawDataCollector+process.muonGEMDigis+process.gemLocalReco+process.AlignmentTrackRecoQC8)
@@ -284,9 +293,6 @@ process.digitisation_step.remove(process.addPileupInfo)
 process.digitisation_step.remove(process.simMuonDTDigis)
 
 
-process.msgStart = cms.EDAnalyzer('GEMMessager',
-                                  message = cms.string('start'),
-                                  printMsg = cms.int32(1))
 process.msgAfterGen = process.msgStart.clone( message = cms.string('afterGen') )
 process.msgAfterGenFilter = process.msgStart.clone( message = cms.string('afterGenFilter') )
 process.msgAfterSim = process.msgStart.clone( message = cms.string('afterSim') )

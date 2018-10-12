@@ -1,6 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
-XMLIdealGeometryESSource = cms.ESSource("GEMCosmicStandGeomESSource",
+#XMLIdealGeometryESSource = cms.ESSource("GEMCosmicStandGeomESSource",
+XMLIdealGeometryESSource = cms.ESSource("XMLIdealGeometryESSource",
     spChmbrNames = cms.vstring(),
     geomXMLFiles = cms.vstring('Geometry/CMSCommonData/data/materials.xml',
         'Geometry/CMSCommonData/data/rotations.xml',

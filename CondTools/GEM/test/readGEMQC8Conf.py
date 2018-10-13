@@ -5,12 +5,12 @@ from CondCore.CondDB.CondDB_cfi import *
 
 options = VarParsing.VarParsing()
 options.register('connectionString',
-                 'sqlite_file:GEM-QC8Geom.db', #default value
+                 'sqlite_file:GEM-QC8Conf.db', #default value
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  "Connection string")
 options.register('tag',
-                 'GEMQC8Geom_v1', #default value
+                 'GEMQC8Conf_v1', #default value
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  "Tag")
@@ -50,16 +50,16 @@ process.source = cms.Source("EmptyIOVSource",
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32( options.numberOfRuns ) ) #options.numberOfRuns runs per job
 
-process.GEMQC8GeomESSource = cms.ESSource( "PoolDBESSource",
+process.GEMQC8ConfESSource = cms.ESSource( "PoolDBESSource",
                                    CondDBReference,
-                                   toGet = cms.VPSet( cms.PSet( record = cms.string('GEMQC8GeomRcd'),
-                                                                tag = cms.string('GEMQC8Geom_v1')
+                                   toGet = cms.VPSet( cms.PSet( record = cms.string('GEMQC8ConfRcd'),
+                                                                tag = cms.string('GEMQC8Conf_v1')
                                                                 )
                                                       ),
                                    )
 
-process.reader = cms.EDAnalyzer( "GEMQC8GeomDBReader",
-                                 dumpFileName = cms.untracked.string( "dumpQC8geom.out" )
+process.reader = cms.EDAnalyzer( "GEMQC8ConfDBReader",
+                                 dumpFileName = cms.untracked.string( "dumpQC8conf.out" )
 )
 
 process.recordDataGetter = cms.EDAnalyzer( "EventSetupRecordDataGetter",
@@ -75,11 +75,11 @@ process.esretrieval = cms.EDAnalyzer( "PrintEventSetupDataRetrieval",
                                       )
 
 #Path definition
-process.GEMQC8GeomReaderSourcePath = cms.Path( process.reader + process.recordDataGetter )
+process.GEMQC8ConfReaderSourcePath = cms.Path( process.reader + process.recordDataGetter )
 process.esout = cms.EndPath( process.escontent + process.esretrieval )
 
 #Schedule definition
-process.schedule = cms.Schedule( process.GEMQC8GeomReaderSourcePath,
+process.schedule = cms.Schedule( process.GEMQC8ConfReaderSourcePath,
                                  process.esout
                                  )
 

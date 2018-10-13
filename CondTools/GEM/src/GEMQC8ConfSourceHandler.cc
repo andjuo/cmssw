@@ -1,4 +1,4 @@
-#include "CondTools/GEM/interface/GEMQC8GeomSourceHandler.h"
+#include "CondTools/GEM/interface/GEMQC8ConfSourceHandler.h"
 #include "CondCore/CondDB/interface/ConnectionPool.h"
 #include "CondCore/DBOutputService/interface/PoolDBOutputService.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
@@ -20,8 +20,8 @@
 //{ std::cout << msg << std::endl; }
 
 
-popcon::GEMQC8GeomSourceHandler::GEMQC8GeomSourceHandler( const edm::ParameterSet& ps ):
-  m_name( ps.getUntrackedParameter<std::string>( "name", "GEMQC8GeomSourceHandler" ) ),
+popcon::GEMQC8ConfSourceHandler::GEMQC8ConfSourceHandler( const edm::ParameterSet& ps ):
+  m_name( ps.getUntrackedParameter<std::string>( "name", "GEMQC8ConfSourceHandler" ) ),
   m_dummy( ps.getUntrackedParameter<int>( "WriteDummy", 0 ) ),
   m_debugMode( ps.getUntrackedParameter<int>( "DebugMode", 0 ) ),
   m_connect( ps.getParameter<std::string>( "connect" ) ),
@@ -32,7 +32,7 @@ popcon::GEMQC8GeomSourceHandler::GEMQC8GeomSourceHandler( const edm::ParameterSe
   m_printValues( ps.getUntrackedParameter<bool>( "printValues", false ) )
 {
   if (m_printValues) {
-    std::cout << "GEMQC8GeomSourceHandler constructor\n";
+    std::cout << "GEMQC8ConfSourceHandler constructor\n";
     std::cout << "  * m_name = " << m_name << "\n";
     std::cout << "  * m_dummy= " << m_dummy << "\n";
     std::cout << "  * m_debugMode= " << m_debugMode << "\n";
@@ -45,24 +45,24 @@ popcon::GEMQC8GeomSourceHandler::GEMQC8GeomSourceHandler( const edm::ParameterSe
   }
 }
 
-popcon::GEMQC8GeomSourceHandler::~GEMQC8GeomSourceHandler()
+popcon::GEMQC8ConfSourceHandler::~GEMQC8ConfSourceHandler()
 {
 }
 
 
-void popcon::GEMQC8GeomSourceHandler::getNewObjects()
+void popcon::GEMQC8ConfSourceHandler::getNewObjects()
 {
-  //std::cout << "GEMQC8GeomSourceHandler getNewObjects" << std::endl;
+  //std::cout << "GEMQC8ConfSourceHandler getNewObjects" << std::endl;
 
-  edm::LogInfo( "GEMQC8GeomSourceHandler" ) << "[" << "GEMQC8GeomSourceHandler::" << __func__ << "]:" << m_name << ": "
+  edm::LogInfo( "GEMQC8ConfSourceHandler" ) << "[" << "GEMQC8ConfSourceHandler::" << __func__ << "]:" << m_name << ": "
                                          << "BEGIN" << std::endl;
 
   // first check what is already there in offline DB
   if (!m_noDBOutput) {
     Ref payload;
     if(tagInfo().size>0) {
-      edm::LogInfo( "GEMQC8GeomSourceHandler" )
-	<< "[" << "GEMQC8GeomSourceHandler::" << __func__ << "]:" << m_name << ": "
+      edm::LogInfo( "GEMQC8ConfSourceHandler" )
+	<< "[" << "GEMQC8ConfSourceHandler::" << __func__ << "]:" << m_name << ": "
 	<< "Validation was requested, so will check present contents\n"
 	<< "Destination Tag Info: name " << tagInfo().name
 	<< ", size " << tagInfo().size
@@ -72,23 +72,23 @@ void popcon::GEMQC8GeomSourceHandler::getNewObjects()
     }
   }
 
-  qc8geom =  new GEMQC8Geom();
+  qc8conf =  new GEMQC8Conf();
 
   if (m_dummy==0) {
     std::cout << "\n\tcalling ConnectOnlineDB" << std::endl;
     ConnectOnlineDB( m_connect, m_connectionPset );
-    readGEMQC8Geom();
+    readGEMQC8Conf();
     DisconnectOnlineDB();
   }
   else {
     std::cout << "\n putting dummy data\n\n";
-    qc8geom->run_number_ = m_runNumber;
+    qc8conf->run_number_ = m_runNumber;
     for (unsigned int i=0; i<15; i++) {
-      qc8geom->chSerialNums_.push_back("L");
+      qc8conf->chSerialNums_.push_back("L");
       std::stringstream ss;
       ss << "c" << (i/5+1) << "_r" << (i%5+1);
-      qc8geom->chPositions_.push_back(ss.str());
-      qc8geom->chGasFlow_.push_back(999.+1e-3*m_runNumber);
+      qc8conf->chPositions_.push_back(ss.str());
+      qc8conf->chGasFlow_.push_back(999.+1e-3*m_runNumber);
     }
   }
 
@@ -98,47 +98,47 @@ void popcon::GEMQC8GeomSourceHandler::getNewObjects()
     // don't look for recent changes
     int difference=1;
     if (difference==1) {
-      std::cout << "GEMQC8GeomSourceHandler getNewObjects difference=1\n";
-      m_to_transfer.push_back(std::make_pair((GEMQC8Geom*)qc8geom,snc));
-      edm::LogInfo( "GEMQC8GeomSourceHandler" )
-	<< "[" << "GEMQC8GeomSourceHandler::" << __func__ << "]:" << m_name << ": "
-	<< "QC8Geom runNumber=" << (*qc8geom).run_number_
-	<< ", sizes: " << (*qc8geom).chSerialNums_.size() << ", "
-	<< (*qc8geom).chPositions_.size() << ", " << (*qc8geom).chGasFlow_.size()
+      std::cout << "GEMQC8ConfSourceHandler getNewObjects difference=1\n";
+      m_to_transfer.push_back(std::make_pair((GEMQC8Conf*)qc8conf,snc));
+      edm::LogInfo( "GEMQC8ConfSourceHandler" )
+	<< "[" << "GEMQC8ConfSourceHandler::" << __func__ << "]:" << m_name << ": "
+	<< "QC8Conf runNumber=" << (*qc8conf).run_number_
+	<< ", sizes: " << (*qc8conf).chSerialNums_.size() << ", "
+	<< (*qc8conf).chPositions_.size() << ", " << (*qc8conf).chGasFlow_.size()
 	<< ", payloads to transfer: " << m_to_transfer.size() << std::endl;
     }
   }
-  edm::LogInfo( "GEMQC8GeomSourceHandler" )
-    << "[" << "GEMQC8GeomSourceHandler::" << __func__ << "]:" << m_name << ": "
+  edm::LogInfo( "GEMQC8ConfSourceHandler" )
+    << "[" << "GEMQC8ConfSourceHandler::" << __func__ << "]:" << m_name << ": "
     << "END." << std::endl;
 }
 
 
 // // additional work (I added these two functions: ConnectOnlineDB and DisconnectOnlineDB)
-void popcon::GEMQC8GeomSourceHandler::ConnectOnlineDB( const std::string& connect, const edm::ParameterSet& connectionPset )
+void popcon::GEMQC8ConfSourceHandler::ConnectOnlineDB( const std::string& connect, const edm::ParameterSet& connectionPset )
 {
-  //std::cout << "GEMQC8GeomSourceHandler ConnectOnlineDB\n";
+  //std::cout << "GEMQC8ConfSourceHandler ConnectOnlineDB\n";
   cond::persistency::ConnectionPool connection;
-  edm::LogInfo( "GEMQC8GeomSourceHandler" ) << "[" << "GEMQC8GeomSourceHandler::" << __func__ << "]:" << m_name << ": "
+  edm::LogInfo( "GEMQC8ConfSourceHandler" ) << "[" << "GEMQC8ConfSourceHandler::" << __func__ << "]:" << m_name << ": "
                                          << "GEMEMapConfigSourceHandler: connecting to " << connect << "..." << std::endl;
   connection.setParameters( connectionPset );
   //std::cout << "connectionPset = " << connectionPset << "\n";
   connection.configure();
   session = connection.createSession( connect,true );
   //session = connection.createSession( connect,false ); // not writeCapable
-  edm::LogInfo( "GEMQC8GeomSourceHandler" ) << "[" << "GEMQC8GeomSourceHandler::" << __func__ << "]:" << m_name << ": "
+  edm::LogInfo( "GEMQC8ConfSourceHandler" ) << "[" << "GEMQC8ConfSourceHandler::" << __func__ << "]:" << m_name << ": "
                                          << "Done." << std::endl;
-  //std::cout << "GEMQC8GeomSourceHandler ConnectOnlineDB leaving" << std::endl;
+  //std::cout << "GEMQC8ConfSourceHandler ConnectOnlineDB leaving" << std::endl;
 }
 
-void popcon::GEMQC8GeomSourceHandler::DisconnectOnlineDB()
+void popcon::GEMQC8ConfSourceHandler::DisconnectOnlineDB()
 {
   session.close();
 }
 
-void popcon::GEMQC8GeomSourceHandler::readGEMQC8Geom()
+void popcon::GEMQC8ConfSourceHandler::readGEMQC8Conf()
 {
-  //std::cout << "\nGEMQC8GeomSourceHandler readGEMQC8Geom" << std::endl;
+  //std::cout << "\nGEMQC8ConfSourceHandler readGEMQC8Conf" << std::endl;
 
   session.transaction().start( true );
   //std::cout << "transaction started" << std::endl;
@@ -169,7 +169,7 @@ void popcon::GEMQC8GeomSourceHandler::readGEMQC8Geom()
     query1->setCondition( condition, conditionData );
     coral::ICursor& cursor = query1->execute();
     std::cout<<"cursor OK"<<std::endl;
-    qc8geom->run_number_ = searchRun;
+    qc8conf->run_number_ = searchRun;
     while ( cursor.next() ) {
       const coral::AttributeList& row = cursor.currentRow();
       try {
@@ -180,9 +180,9 @@ void popcon::GEMQC8GeomSourceHandler::readGEMQC8Geom()
 
 	if (m_debugMode) db_flow+= 1e-3*searchRun;
 
-	qc8geom->chSerialNums_.push_back(db_chSerNum);
-	qc8geom->chPositions_.push_back(db_chPos);
-	qc8geom->chGasFlow_.push_back(db_flow);
+	qc8conf->chSerialNums_.push_back(db_chSerNum);
+	qc8conf->chPositions_.push_back(db_chPos);
+	qc8conf->chGasFlow_.push_back(db_flow);
 
 	if (m_printValues) {
 	  std::cout << "db: " << db_runnumber << ", " << db_chSerNum
@@ -200,13 +200,13 @@ void popcon::GEMQC8GeomSourceHandler::readGEMQC8Geom()
 
     // check if we have to loop
     searchRun--;
-    if (m_allowRollBack && (qc8geom->chSerialNums_.size()==0)) {
-      edm::LogInfo( "GEMQC8GeomSourceHandler" )
-	<< "[" << "GEMQC8GeomSourceHandler::" << __func__ << "]:" << m_name << ": "
+    if (m_allowRollBack && (qc8conf->chSerialNums_.size()==0)) {
+      edm::LogInfo( "GEMQC8ConfSourceHandler" )
+	<< "[" << "GEMQC8ConfSourceHandler::" << __func__ << "]:" << m_name << ": "
 	<< "failed to find runNumber=" << (searchRun+1) << std::endl;
     }
-  } while (!qc8geom->chSerialNums_.size() && m_allowRollBack && (searchRun>0));
+  } while (!qc8conf->chSerialNums_.size() && m_allowRollBack && (searchRun>0));
 
-  //std::cout << "GEMQC8GeomSourceHandler readGEMQC8Geom done" << std::endl;
+  //std::cout << "GEMQC8ConfSourceHandler readGEMQC8Conf done" << std::endl;
 
 }

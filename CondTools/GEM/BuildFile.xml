@@ -7,8 +7,6 @@
 <use   name="FWCore/ParameterSet"/>
 <use   name="FWCore/ServiceRegistry"/>
 <use   name="RelationalAccess"/>
-<!--use   name="boost"/>
-<use   name="ROOT"/-->
 <flag  EDM_PLUGIN="1"/>
 <export>
   <lib   name="1"/>

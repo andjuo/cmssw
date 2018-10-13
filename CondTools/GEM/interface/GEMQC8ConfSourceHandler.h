@@ -1,8 +1,8 @@
-#ifndef CondTools_GEM_GEMQC8GeomSourceHandler_h
-#define CondTools_GEM_GEMQC8GeomSourceHandler_h
+#ifndef CondTools_GEM_GEMQC8ConfSourceHandler_h
+#define CondTools_GEM_GEMQC8ConfSourceHandler_h
 
 #include "CondCore/PopCon/interface/PopConSourceHandler.h"
-#include "CondFormats/GEMObjects/interface/GEMQC8Geom.h"
+#include "CondFormats/GEMObjects/interface/GEMQC8Conf.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 //#include "CoralBase/TimeStamp.h"
 
@@ -10,22 +10,22 @@
 
 namespace popcon
 {
-  class GEMQC8GeomSourceHandler : public popcon::PopConSourceHandler<GEMQC8Geom>
+  class GEMQC8ConfSourceHandler : public popcon::PopConSourceHandler<GEMQC8Conf>
   {
 
   public:
 
-    GEMQC8GeomSourceHandler( const edm::ParameterSet& ps );
-    ~GEMQC8GeomSourceHandler();
+    GEMQC8ConfSourceHandler( const edm::ParameterSet& ps );
+    ~GEMQC8ConfSourceHandler();
     void getNewObjects();
     void ConnectOnlineDB( const std::string& connect, const edm::ParameterSet& connectionPset );
     void DisconnectOnlineDB();
-    void readGEMQC8Geom();
+    void readGEMQC8Conf();
     std::string id() const { return m_name; }
-    const GEMQC8Geom* getQC8geom() const { return qc8geom; }
+    const GEMQC8Conf* getQC8conf() const { return qc8conf; }
 
   private:
-    GEMQC8Geom * qc8geom;
+    GEMQC8Conf * qc8conf;
     cond::persistency::Session session;
     std::string m_name;
     int m_dummy;

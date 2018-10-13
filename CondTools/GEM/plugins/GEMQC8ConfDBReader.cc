@@ -8,8 +8,8 @@
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
-#include "CondFormats/GEMObjects/interface/GEMQC8Geom.h"
-#include "CondFormats/DataRecord/interface/GEMQC8GeomRcd.h"
+#include "CondFormats/GEMObjects/interface/GEMQC8Conf.h"
+#include "CondFormats/DataRecord/interface/GEMQC8ConfRcd.h"
 
 #include <iomanip>
 #include <fstream>
@@ -18,10 +18,10 @@
 //using namespace edm;
 
 // class declaration
-class GEMQC8GeomDBReader : public edm::EDAnalyzer {
+class GEMQC8ConfDBReader : public edm::EDAnalyzer {
 public:
-  explicit GEMQC8GeomDBReader( const edm::ParameterSet& );
-  ~GEMQC8GeomDBReader();
+  explicit GEMQC8ConfDBReader( const edm::ParameterSet& );
+  ~GEMQC8ConfDBReader();
   void beginJob();
   virtual void analyze( const edm::Event&, const edm::EventSetup& );
   void endJob();
@@ -32,16 +32,16 @@ private:
   //bool m_flag;
 };
 
-GEMQC8GeomDBReader::GEMQC8GeomDBReader( const edm::ParameterSet& iConfig ) :
+GEMQC8ConfDBReader::GEMQC8ConfDBReader( const edm::ParameterSet& iConfig ) :
   dumpFileName_(iConfig.getUntrackedParameter<std::string>("dumpFileName","")),
   dumpFout_()
 {
 }
 
-GEMQC8GeomDBReader::~GEMQC8GeomDBReader(){}
+GEMQC8ConfDBReader::~GEMQC8ConfDBReader(){}
 
 
-void GEMQC8GeomDBReader::beginJob()
+void GEMQC8ConfDBReader::beginJob()
 {
   if (dumpFileName_.size()) {
     dumpFout_.open(dumpFileName_.c_str());
@@ -49,14 +49,14 @@ void GEMQC8GeomDBReader::beginJob()
 }
 
 
-void GEMQC8GeomDBReader::analyze( const edm::Event& iEvent, const edm::EventSetup& iSetup ) {
+void GEMQC8ConfDBReader::analyze( const edm::Event& iEvent, const edm::EventSetup& iSetup ) {
 
-  std::cout << "====== GEMQC8GeomDBReader" << std::endl;
+  std::cout << "====== GEMQC8ConfDBReader" << std::endl;
 
-  edm::ESHandle<GEMQC8Geom> hInfo;
-  iSetup.get<GEMQC8GeomRcd>().get(hInfo);
+  edm::ESHandle<GEMQC8Conf> hInfo;
+  iSetup.get<GEMQC8ConfRcd>().get(hInfo);
   if (!hInfo.isValid()) std::cout << "invalid handle hInfo" << std::endl;
-  const GEMQC8Geom* info=hInfo.product();
+  const GEMQC8Conf* info=hInfo.product();
   if(!info) { std::cout << "info is null" << std::endl; return; }
 
   info->print(std::cout);
@@ -65,13 +65,13 @@ void GEMQC8GeomDBReader::analyze( const edm::Event& iEvent, const edm::EventSetu
   if (dumpFout_.is_open()) info->print(dumpFout_);
 }
 
-void GEMQC8GeomDBReader::endJob()
+void GEMQC8ConfDBReader::endJob()
 {
   if (dumpFout_.is_open()) {
-    dumpFout_ << "GEMQC8GeomDBReader: dump done\n";
+    dumpFout_ << "GEMQC8ConfDBReader: dump done\n";
     dumpFout_.close();
   }
 }
 
 //define this as a plug-in
-DEFINE_FWK_MODULE(GEMQC8GeomDBReader);
+DEFINE_FWK_MODULE(GEMQC8ConfDBReader);

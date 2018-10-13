@@ -23,7 +23,7 @@ options.register( 'numberOfRuns',
                   VarParsing.VarParsing.varType.int,
                   "Run number to be uploaded." )
 options.register( 'destinationConnection',
-                  'sqlite_file:GEM-QC8Geom.db', #default value
+                  'sqlite_file:GEM-QC8Conf.db', #default value
                   VarParsing.VarParsing.multiplicity.singleton,
                   VarParsing.VarParsing.varType.string,
                   "Connection string to the DB where payloads will be possibly written." )
@@ -35,7 +35,7 @@ options.register( 'targetConnection',
                      if not empty (default), this provides the latest IOV and payloads to compare;
                      it is the DB where payloads should be finally uploaded.""" )
 options.register( 'tag',
-                  'GEMQC8Geom_v1',
+                  'GEMQC8Conf_v1',
                   VarParsing.VarParsing.multiplicity.singleton,
                   VarParsing.VarParsing.varType.string,
                   "Tag written in destinationConnection and finally appended in targetConnection." )
@@ -80,15 +80,15 @@ process.source = cms.Source( "EmptyIOVSource",
 #process.PoolDBOutputService = cms.Service( "PoolDBOutputService",
 #                                           CondDBConnection,
 #                                           timetype = cms.untracked.string( 'runnumber' ),
-#                                           toPut = cms.VPSet( cms.PSet( record = cms.string( 'GEMQC8GeomRcd' ),
+#                                           toPut = cms.VPSet( cms.PSet( record = cms.string( 'GEMQC8ConfRcd' ),
 #                                                                        tag = cms.string( options.tag ) ) ) )
 
 
-#process.WriteInDB = cms.EDAnalyzer("GEMQC8GeomDBWriter",
+#process.WriteInDB = cms.EDAnalyzer("GEMQC8ConfDBWriter",
 #    Validate = cms.untracked.int32( 0 ),
 #    SinceAppendMode = cms.bool( True ),
 #    #SinceAppendMode = cms.bool( False ),
-#    record = cms.string( 'GEMQC8GeomRcd' ),
+#    record = cms.string( 'GEMQC8ConfRcd' ),
 #    loggingOn = cms.untracked.bool( False ),
 #    Source = cms.PSet( SourceDBConnection,
 #                       runNumber = cms.int32( options.runNumber ),
@@ -98,7 +98,7 @@ process.source = cms.Source( "EmptyIOVSource",
 #                   )
 #)
 
-process.GEMQC8GeomESSource = cms.ESSource("GEMQC8GeomESSource",
+process.GEMQC8ConfESSource = cms.ESSource("GEMQC8ConfESSource",
     SourceDBConnection,
     runNumber = cms.int32( options.runNumber ),
     DebugMode = cms.untracked.int32(1),
@@ -110,19 +110,19 @@ process.GEMQC8GeomESSource = cms.ESSource("GEMQC8GeomESSource",
 process.get = cms.EDAnalyzer("EventSetupRecordDataGetter",
   toGet = cms.VPSet(
         cms.PSet(
-            record = cms.string('GEMQC8GeomRcd'),
-            data = cms.vstring('GEMQC8Geom')
+            record = cms.string('GEMQC8ConfRcd'),
+            data = cms.vstring('GEMQC8Conf')
 )),
   verbose = cms.untracked.bool(True)
 )
 
 
-process.reader = cms.EDAnalyzer( "GEMQC8GeomDBReader",
-                                 dumpFileName = cms.untracked.string( "dumpQC8geom.out" )
+process.reader = cms.EDAnalyzer( "GEMQC8ConfDBReader",
+                                 dumpFileName = cms.untracked.string( "dumpQC8conf.out" )
 )
 
 #Path definition
-#process.GEMQC8GeomReaderSourcePath = cms.Path( process.reader + process.get )
+#process.GEMQC8ConfReaderSourcePath = cms.Path( process.reader + process.get )
 
 #process.p = cms.Path( process.WriteInDB )
 #process.p = cms.Path( )

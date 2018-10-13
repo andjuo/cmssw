@@ -1,7 +1,7 @@
-#include "CondFormats/GEMObjects/interface/GEMQC8Geom.h"
+#include "CondFormats/GEMObjects/interface/GEMQC8Conf.h"
 #include "FWCore/Utilities/interface/Exception.h"
 
-GEMQC8Geom::GEMQC8Geom(const GEMQC8Geom *g)
+GEMQC8Conf::GEMQC8Conf(const GEMQC8Conf *g)
 {
   if (!g) return;
   run_number_ = g->run_number_;
@@ -10,7 +10,7 @@ GEMQC8Geom::GEMQC8Geom(const GEMQC8Geom *g)
   chGasFlow_ = g->chGasFlow_;
 }
 
-void GEMQC8Geom::assign(const GEMQC8Geom &g)
+void GEMQC8Conf::assign(const GEMQC8Conf &g)
 {
   run_number_ = g.run_number_;
   chSerialNums_ = g.chSerialNums_;
@@ -18,9 +18,9 @@ void GEMQC8Geom::assign(const GEMQC8Geom &g)
   chGasFlow_ = g.chGasFlow_;
 }
 
-void GEMQC8Geom::print(std::ostream &out) const
+void GEMQC8Conf::print(std::ostream &out) const
 {
-  out << "GEMQC8Geom for run_number=" << run_number_ << "\n";
+  out << "GEMQC8Conf for run_number=" << run_number_ << "\n";
   unsigned int sz= chSerialNums_.size();
   if ((sz!=chPositions_.size()) || (sz!=chGasFlow_.size())) {
     out << " different sizes of arrays: chSerialNums[" << sz

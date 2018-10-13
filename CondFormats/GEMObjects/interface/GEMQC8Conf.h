@@ -1,16 +1,16 @@
-#ifndef CondFormats_GEMObjects_GEMQC8Geom_h
-#define CondFormats_GEMObjects_GEMQC8Geom_h
+#ifndef CondFormats_GEMObjects_GEMQC8Conf_h
+#define CondFormats_GEMObjects_GEMQC8Conf_h
 
 #include "CondFormats/Serialization/interface/Serializable.h"
 #include <vector>
 #include <iostream>
 
-class GEMQC8Geom {
+class GEMQC8Conf {
 
  public:
-  GEMQC8Geom(){}
-  GEMQC8Geom(const GEMQC8Geom *);
-  ~GEMQC8Geom(){}
+  GEMQC8Conf(){}
+  GEMQC8Conf(const GEMQC8Conf *);
+  ~GEMQC8Conf(){}
 
   int runNo() const { return run_number_; }
   const std::vector<std::string>& chSerNums() const { return chSerialNums_; }
@@ -20,7 +20,7 @@ class GEMQC8Geom {
   const std::vector<float> chGasFlow() const { return chGasFlow_; }
   float chGasFlow(int idx) const { return chGasFlow_.at(idx); }
 
-  void assign(const GEMQC8Geom&);
+  void assign(const GEMQC8Conf&);
   void print(std::ostream &out = std::cout) const;
 
  public:

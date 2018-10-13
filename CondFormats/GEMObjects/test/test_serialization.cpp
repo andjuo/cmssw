@@ -9,5 +9,5 @@ int main()
   testSerialization<GEMELMap::GEMStripMap>();
   testSerialization<std::vector<GEMELMap::GEMStripMap>>();
 
-  testSerialization<GEMQC8Geom>();
+  testSerialization<GEMQC8Conf>();
 }

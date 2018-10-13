@@ -9,6 +9,7 @@ class GEMQC8Geom {
 
  public:
   GEMQC8Geom(){}
+  GEMQC8Geom(const GEMQC8Geom *);
   ~GEMQC8Geom(){}
 
   int runNo() const { return run_number_; }
@@ -19,6 +20,7 @@ class GEMQC8Geom {
   const std::vector<float> chGasFlow() const { return chGasFlow_; }
   float chGasFlow(int idx) const { return chGasFlow_.at(idx); }
 
+  void assign(const GEMQC8Geom&);
   void print(std::ostream &out = std::cout) const;
 
  public:

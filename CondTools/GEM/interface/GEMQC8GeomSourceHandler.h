@@ -22,6 +22,7 @@ namespace popcon
     void DisconnectOnlineDB();
     void readGEMQC8Geom();
     std::string id() const { return m_name; }
+    const GEMQC8Geom* getQC8geom() const { return qc8geom; }
 
   private:
     GEMQC8Geom * qc8geom;

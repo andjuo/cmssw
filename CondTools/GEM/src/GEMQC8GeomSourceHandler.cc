@@ -28,6 +28,7 @@ popcon::GEMQC8GeomSourceHandler::GEMQC8GeomSourceHandler( const edm::ParameterSe
   m_connectionPset( ps.getParameter<edm::ParameterSet>( "DBParameters" ) ),
   m_runNumber( ps.getParameter<int>("runNumber") ),
   m_allowRollBack( ps.getUntrackedParameter<int>( "AllowRollBack", 1 ) ),
+  m_noDBOutput( ps.getUntrackedParameter<int>( "NoDBOutput", 0 ) ),
   m_printValues( ps.getUntrackedParameter<bool>( "printValues", false ) )
 {
   if (m_printValues) {
@@ -39,6 +40,7 @@ popcon::GEMQC8GeomSourceHandler::GEMQC8GeomSourceHandler( const edm::ParameterSe
     std::cout << "  * DBParameters= " << m_connectionPset << "\n";
     std::cout << "  * m_runNumber=" << m_runNumber << "\n";
     std::cout << "  * m_allowRollBack=" << m_allowRollBack << "\n";
+    std::cout << "  * m_noDBOutput=" << m_noDBOutput << "\n";
     std::cout << "  * m_printValues=" << m_printValues << "\n";
   }
 }
@@ -50,22 +52,24 @@ popcon::GEMQC8GeomSourceHandler::~GEMQC8GeomSourceHandler()
 
 void popcon::GEMQC8GeomSourceHandler::getNewObjects()
 {
-  //std::cout << "GEMQC8GeomSourceHandler getNewObjects\n";
+  //std::cout << "GEMQC8GeomSourceHandler getNewObjects" << std::endl;
 
   edm::LogInfo( "GEMQC8GeomSourceHandler" ) << "[" << "GEMQC8GeomSourceHandler::" << __func__ << "]:" << m_name << ": "
                                          << "BEGIN" << std::endl;
 
   // first check what is already there in offline DB
-  Ref payload;
-  if(tagInfo().size>0) {
-    edm::LogInfo( "GEMQC8GeomSourceHandler" )
-      << "[" << "GEMQC8GeomSourceHandler::" << __func__ << "]:" << m_name << ": "
-      << "Validation was requested, so will check present contents\n"
-      << "Destination Tag Info: name " << tagInfo().name
-      << ", size " << tagInfo().size
-      << ", last object valid since " << tagInfo().lastInterval.first
-      << ", hash " << tagInfo().lastPayloadToken << std::endl;
-    payload = lastPayload();
+  if (!m_noDBOutput) {
+    Ref payload;
+    if(tagInfo().size>0) {
+      edm::LogInfo( "GEMQC8GeomSourceHandler" )
+	<< "[" << "GEMQC8GeomSourceHandler::" << __func__ << "]:" << m_name << ": "
+	<< "Validation was requested, so will check present contents\n"
+	<< "Destination Tag Info: name " << tagInfo().name
+	<< ", size " << tagInfo().size
+	<< ", last object valid since " << tagInfo().lastInterval.first
+	<< ", hash " << tagInfo().lastPayloadToken << std::endl;
+      payload = lastPayload();
+    }
   }
 
   qc8geom =  new GEMQC8Geom();
@@ -89,18 +93,20 @@ void popcon::GEMQC8GeomSourceHandler::getNewObjects()
   }
 
   edm::Service<cond::service::PoolDBOutputService> mydbservice;
-  cond::Time_t snc = mydbservice->currentTime();
-  // don't look for recent changes
-  int difference=1;
-  if (difference==1) {
-    std::cout << "GEMQC8GeomSourceHandler getNewObjects difference=1\n";
-    m_to_transfer.push_back(std::make_pair((GEMQC8Geom*)qc8geom,snc));
-    edm::LogInfo( "GEMQC8GeomSourceHandler" )
-      << "[" << "GEMQC8GeomSourceHandler::" << __func__ << "]:" << m_name << ": "
-      << "QC8Geom runNumber=" << (*qc8geom).run_number_
-      << ", sizes: " << (*qc8geom).chSerialNums_.size() << ", "
-      << (*qc8geom).chPositions_.size() << ", " << (*qc8geom).chGasFlow_.size()
-      << ", payloads to transfer: " << m_to_transfer.size() << std::endl;
+  if (mydbservice.isAvailable()) {
+    cond::Time_t snc = mydbservice->currentTime();
+    // don't look for recent changes
+    int difference=1;
+    if (difference==1) {
+      std::cout << "GEMQC8GeomSourceHandler getNewObjects difference=1\n";
+      m_to_transfer.push_back(std::make_pair((GEMQC8Geom*)qc8geom,snc));
+      edm::LogInfo( "GEMQC8GeomSourceHandler" )
+	<< "[" << "GEMQC8GeomSourceHandler::" << __func__ << "]:" << m_name << ": "
+	<< "QC8Geom runNumber=" << (*qc8geom).run_number_
+	<< ", sizes: " << (*qc8geom).chSerialNums_.size() << ", "
+	<< (*qc8geom).chPositions_.size() << ", " << (*qc8geom).chGasFlow_.size()
+	<< ", payloads to transfer: " << m_to_transfer.size() << std::endl;
+    }
   }
   edm::LogInfo( "GEMQC8GeomSourceHandler" )
     << "[" << "GEMQC8GeomSourceHandler::" << __func__ << "]:" << m_name << ": "

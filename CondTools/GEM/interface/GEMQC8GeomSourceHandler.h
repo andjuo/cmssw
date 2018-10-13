@@ -35,6 +35,7 @@ namespace popcon
     edm::ParameterSet m_connectionPset;
     int m_runNumber;
     int m_allowRollBack;
+    int m_noDBOutput;   // whether DBOutput module is expected
     bool m_printValues;
   };
 }

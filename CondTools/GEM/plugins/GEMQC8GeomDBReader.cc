@@ -55,6 +55,7 @@ void GEMQC8GeomDBReader::analyze( const edm::Event& iEvent, const edm::EventSetu
 
   edm::ESHandle<GEMQC8Geom> hInfo;
   iSetup.get<GEMQC8GeomRcd>().get(hInfo);
+  if (!hInfo.isValid()) std::cout << "invalid handle hInfo" << std::endl;
   const GEMQC8Geom* info=hInfo.product();
   if(!info) { std::cout << "info is null" << std::endl; return; }
 

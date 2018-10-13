@@ -73,8 +73,8 @@ if options.messageLevel == 3:
 
 process.source = cms.Source( "EmptyIOVSource",
                              timetype = cms.string( 'runnumber' ),
-                             firstValue = cms.uint64( options.runNumber - 1 ),
-                             lastValue = cms.uint64( options.runNumber + options.numberOfRuns - 1 ),
+                             firstValue = cms.uint64( options.runNumber ),
+                             lastValue = cms.uint64( options.runNumber + options.numberOfRuns ),
                              interval = cms.uint64( 1 ) )
 
 #process.PoolDBOutputService = cms.Service( "PoolDBOutputService",
@@ -98,18 +98,32 @@ process.source = cms.Source( "EmptyIOVSource",
 #                   )
 #)
 
-process.GEMQC8GeomProducer = cms.ESProducer("GEMQC8GeomESProducer",
+process.GEMQC8GeomESSource = cms.ESSource("GEMQC8GeomESSource",
     SourceDBConnection,
     runNumber = cms.int32( options.runNumber ),
     DebugMode = cms.untracked.int32(1),
     WriteDummy = cms.untracked.int32(0),#fakeData for testing
+    NoDBOutput = cms.untracked.int32(1), # whether PoolDBOutputService is established
     printValues = cms.untracked.bool( True ), # whether to print obtained values
 )
+
+process.get = cms.EDAnalyzer("EventSetupRecordDataGetter",
+  toGet = cms.VPSet(
+        cms.PSet(
+            record = cms.string('GEMQC8GeomRcd'),
+            data = cms.vstring('GEMQC8Geom')
+)),
+  verbose = cms.untracked.bool(True)
+)
+
 
 process.reader = cms.EDAnalyzer( "GEMQC8GeomDBReader",
                                  dumpFileName = cms.untracked.string( "dumpQC8geom.out" )
 )
 
+#Path definition
+#process.GEMQC8GeomReaderSourcePath = cms.Path( process.reader + process.get )
 
 #process.p = cms.Path( process.WriteInDB )
-process.p = cms.Path( process.reader )
+#process.p = cms.Path( )
+process.p = cms.Path( process.get )

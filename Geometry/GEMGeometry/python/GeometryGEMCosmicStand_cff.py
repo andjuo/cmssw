@@ -4,7 +4,15 @@ import FWCore.ParameterSet.Config as cms
 from Geometry.MuonCommonData.gemboxCosmicStand_cfi import *
 
 from CondTools.GEM.gemQC8ConfESSource_cfi import *
-XMLIdealGeometryESSource.DBSource = GEMQC8ConfESSource
+XMLIdealGeometryESSource.DBSource = cms.untracked.PSet(
+    connect = GEMQC8ConfESSource.connect,
+    DBParameters = GEMQC8ConfESSource.DBParameters,
+    DebugMode = cms.untracked.int32(0),
+    WriteDummy = cms.untracked.int32(0),#fakeData for testing
+    NoDBOutput = cms.untracked.int32(1), # whether PoolDBOutputService is established
+    printValues = cms.untracked.bool( False ), # whether to print obtained values
+    runNumber = cms.int32(1)
+)
 
 from Geometry.GEMGeometryBuilder.gemGeometry_cfi import *
 from RecoMuon.DetLayers.muonDetLayerGeometry_cfi import *

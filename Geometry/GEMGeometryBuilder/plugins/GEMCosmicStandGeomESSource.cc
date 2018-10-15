@@ -108,8 +108,9 @@ GEMCosmicStandGeomESSource::produceGeom(const IdealGeometryRecord &)
 	  std::stringstream sout;
 	  sout << "Geometry/MuonCommonData/data/GEMQC8/gem11" << chamberSize
 	       << "_c" << ic << "_r" << ir << ".xml";
-	  std::cout << "GEMCosmicStandGeomESSource::produceGeom: adding file " << ss.str() << std::endl;
-	  geoConfig_.addFile(ss.str());
+	  std::cout << "GEMCosmicStandGeomESSource::produceGeom: for chamber "
+		    << chNames->at(i) << " adding file " << sout.str() << std::endl;
+	  geoConfig_.addFile(sout.str());
 	}
       }
     }

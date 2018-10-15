@@ -58,8 +58,10 @@ void popcon::GEMQC8ConfSourceHandler::getNewObjects()
 
   edm::LogInfo( "GEMQC8ConfSourceHandler" ) << "[" << "GEMQC8ConfSourceHandler::" << __func__ << "]:" << m_name << ": "
 					    << "BEGIN m_onlyConfDef=" << m_onlyConfDef << std::endl;
+  //std::cout << "m_noDBOutput=" << m_noDBOutput << std::endl;
 
   // first check what is already there in offline DB
+  /* // needed if we want to avoid duplicated records
   if (!m_noDBOutput) {
     Ref payload;
     if(tagInfo().size>0) {
@@ -73,6 +75,7 @@ void popcon::GEMQC8ConfSourceHandler::getNewObjects()
       payload = lastPayload();
     }
   }
+  */
 
   qc8conf =  new GEMQC8Conf();
 

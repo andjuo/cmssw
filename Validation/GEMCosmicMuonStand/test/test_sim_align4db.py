@@ -83,8 +83,9 @@ process.load('SimMuon.GEMCosmicMuon.muonGEMDigi_cff')
 process.load('RecoLocalMuon.GEMRecHit.gemLocalReco_cff')
 
 #process.XMLIdealGeometryESSource.spChmbrNames = cms.vstring(SuperChType)
-process.XMLIdealGeometryESSource.useDB = cms.bool(True)
+process.XMLIdealGeometryESSource.useDB = cms.untracked.bool(True)
 process.XMLIdealGeometryESSource.DBSource.runNumber = cms.int32(options.runNum)
+process.XMLIdealGeometryESSource.DBSource.printNumbers = cms.bool(True)
 
 # Config importation & settings
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(options.eventsPerJob))
@@ -94,12 +95,12 @@ strOutput = "out_reco_MC.root" if nIdxJob >= 0 else runConfig.OutputFileName
 if nIdxJob < 0: nIdxJob = 0
 
 # Input source
-#process.source = cms.Source("EmptySource", 
-#    firstRun = cms.untracked.uint32(options.runNum), 
-#    firstEvent = cms.untracked.uint32(options.eventsPerJob * nIdxJob + 1), 
-#    firstLuminosityBlock = cms.untracked.uint32(nIdxJob + 1), 
-#)
-#process.options = cms.untracked.PSet()
+process.source = cms.Source("EmptySource",
+    firstRun = cms.untracked.uint32(options.runNum),
+    firstEvent = cms.untracked.uint32(options.eventsPerJob * nIdxJob + 1),
+    firstLuminosityBlock = cms.untracked.uint32(nIdxJob + 1),
+)
+process.options = cms.untracked.PSet()
 
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 

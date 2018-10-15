@@ -29,6 +29,7 @@ popcon::GEMQC8ConfSourceHandler::GEMQC8ConfSourceHandler( const edm::ParameterSe
   m_runNumber( ps.getParameter<int>("runNumber") ),
   m_allowRollBack( ps.getUntrackedParameter<int>( "AllowRollBack", 1 ) ),
   m_noDBOutput( ps.getUntrackedParameter<int>( "NoDBOutput", 0 ) ),
+  m_onlyConfDef( ps.getUntrackedParameter<int>( "OnlyConfDef", 1 ) ),
   m_printValues( ps.getUntrackedParameter<bool>( "printValues", false ) )
 {
   if (m_printValues) {
@@ -41,6 +42,7 @@ popcon::GEMQC8ConfSourceHandler::GEMQC8ConfSourceHandler( const edm::ParameterSe
     std::cout << "  * m_runNumber=" << m_runNumber << "\n";
     std::cout << "  * m_allowRollBack=" << m_allowRollBack << "\n";
     std::cout << "  * m_noDBOutput=" << m_noDBOutput << "\n";
+    std::cout << "  * m_onlyConfDef=" << m_onlyConfDef << "\n";
     std::cout << "  * m_printValues=" << m_printValues << "\n";
   }
 }
@@ -55,7 +57,7 @@ void popcon::GEMQC8ConfSourceHandler::getNewObjects()
   //std::cout << "GEMQC8ConfSourceHandler getNewObjects" << std::endl;
 
   edm::LogInfo( "GEMQC8ConfSourceHandler" ) << "[" << "GEMQC8ConfSourceHandler::" << __func__ << "]:" << m_name << ": "
-                                         << "BEGIN" << std::endl;
+					    << "BEGIN m_onlyConfDef=" << m_onlyConfDef << std::endl;
 
   // first check what is already there in offline DB
   if (!m_noDBOutput) {
@@ -78,6 +80,7 @@ void popcon::GEMQC8ConfSourceHandler::getNewObjects()
     std::cout << "\n\tcalling ConnectOnlineDB" << std::endl;
     ConnectOnlineDB( m_connect, m_connectionPset );
     readGEMQC8Conf();
+    if (!m_onlyConfDef) readGEMQC8EMap();
     DisconnectOnlineDB();
   }
   else {
@@ -209,4 +212,11 @@ void popcon::GEMQC8ConfSourceHandler::readGEMQC8Conf()
 
   //std::cout << "GEMQC8ConfSourceHandler readGEMQC8Conf done" << std::endl;
 
+}
+
+
+void popcon::GEMQC8ConfSourceHandler::readGEMQC8EMap()
+{
+  std::cout << "\nGEMQC8ConfSourceHandler readGEMQC8EMap" << std::endl;
+  std::cout << "  NOT IMPLEMENTED" << std::endl;
 }

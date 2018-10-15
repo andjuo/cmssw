@@ -17,6 +17,10 @@
 #include "DetectorDescription/Core/interface/DDCompactView.h"
 #include "Geometry/Records/interface/IdealGeometryRecord.h"
 
+#include "CondTools/GEM/interface/GEMQC8ConfSourceHandler.h"
+#include "CondFormats/GEMObjects/interface/GEMQC8Conf.h"
+//#include "CondFormats/DataRecord/interface/GEMQC8ConfRcd.h"
+
 #include <memory>
 #include <string>
 
@@ -43,6 +47,9 @@ protected:
 private:
   // description of superchambers
   std::vector<std::string> spChmbrNames_;
+  bool useDB_; // whether the chambers should be read from a DB
+  popcon::GEMQC8ConfSourceHandler confSrcHandler_;
+
   // from XMLIdealGeometryESSource
   std::string rootNodeName_;
   bool userNS_;

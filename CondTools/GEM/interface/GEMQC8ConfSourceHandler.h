@@ -21,8 +21,10 @@ namespace popcon
     void ConnectOnlineDB( const std::string& connect, const edm::ParameterSet& connectionPset );
     void DisconnectOnlineDB();
     void readGEMQC8Conf();
+    void readGEMQC8EMap();
     std::string id() const { return m_name; }
     const GEMQC8Conf* getQC8conf() const { return qc8conf; }
+    void setOnlyConfDef(int val) { m_onlyConfDef = val; }
 
   private:
     GEMQC8Conf * qc8conf;
@@ -36,6 +38,7 @@ namespace popcon
     int m_runNumber;
     int m_allowRollBack;
     int m_noDBOutput;   // whether DBOutput module is expected
+    int m_onlyConfDef;
     bool m_printValues;
   };
 }

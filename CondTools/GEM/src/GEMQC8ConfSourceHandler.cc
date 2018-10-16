@@ -14,7 +14,7 @@
 //#include <fstream>
 #include <vector>
 #include <sstream>
-
+#include <cstdlib>
 
 //inline void HERE(std::string msg)
 //{ std::cout << msg << std::endl; }
@@ -214,12 +214,94 @@ void popcon::GEMQC8ConfSourceHandler::readGEMQC8Conf()
   } while (!qc8conf->chSerialNums_.size() && m_allowRollBack && (searchRun>0));
 
   //std::cout << "GEMQC8ConfSourceHandler readGEMQC8Conf done" << std::endl;
-
 }
+
 
 
 void popcon::GEMQC8ConfSourceHandler::readGEMQC8EMap()
 {
   std::cout << "\nGEMQC8ConfSourceHandler readGEMQC8EMap" << std::endl;
-  std::cout << "  NOT IMPLEMENTED" << std::endl;
+
+  if (!qc8conf || !qc8conf->chSerNums().size()) {
+    std::cout << "readGEMQC8EMap is called for incorrect qc8conf\n";
+    return;
+  }
+
+  session.transaction().start( true );
+  //std::cout << "transaction started" << std::endl;
+  coral::ISchema& schema = session.nominalSchema();
+  //std::cout << "got schema with name <" << schema.schemaName() << ">" << std::endl;
+
+  for (unsigned int ich=0; ich<qc8conf->chSerNums().size(); ich++) {
+    std::cout << " readGEMQC8EMap chamber " << qc8conf->chSerNum(ich) << "\n";
+
+    coral::IQuery* query1 = schema.newQuery();
+    query1->addToTableList( "GEM_SPRCHMBR_OPTHYB_VFATS_VIEW");
+    query1->addToOutputList("GEM_SPRCHMBR_OPTHYB_VFATS_VIEW.SPER_CHMBR_SER_NUM", "SPER_CHMBR_SER_NUM");
+    query1->addToOutputList("GEM_SPRCHMBR_OPTHYB_VFATS_VIEW.CHMBR_SER_NUM", "CHMBR_SER_NUM");
+    query1->addToOutputList("GEM_SPRCHMBR_OPTHYB_VFATS_VIEW.DEPTH", "DEPTH");
+    query1->addToOutputList("GEM_SPRCHMBR_OPTHYB_VFATS_VIEW.VFAT_ADDRESS", "VFAT_ADDRESS");
+    query1->addToOutputList("GEM_SPRCHMBR_OPTHYB_VFATS_VIEW.VFAT_NAME", "VFAT_NAME");
+    query1->addToOutputList("GEM_SPRCHMBR_OPTHYB_VFATS_VIEW.VFAT_POSN", "VFAT_POSN");
+
+    coral::AttributeList conditionData; // empty
+    std::string condition;
+    {
+      std::stringstream ssCond;
+      ssCond << "CHMBR_SER_NUM = " << qc8conf->chSerNum(ich);
+      condition = ssCond.str();
+    }
+
+    // get values
+    query1->setCondition( condition, conditionData );
+    coral::ICursor& cursor = query1->execute();
+    std::cout<<"cursor OK"<<std::endl;
+    GEMELMap elmap;
+    GEMELMap::GEMVFatMap vfats;
+    vfats.VFATmapTypeId=-1;
+    while ( cursor.next() ) {
+      const coral::AttributeList& row = cursor.currentRow();
+      try {
+	std::string db_spChSerNum = row["SPER_CHMBR_SER_NUM"].data<std::string>();
+	std::string db_chSerNum = row["CHMBR_SER_NUM"].data<std::string>();
+	std::string db_depth = row["DEPTH"].data<std::string>();
+	std::string db_vfatAddr = row["VFAT_ADDRESS"].data<std::string>();
+	std::string db_vfatName = row["VFAT_NAME"].data<std::string>();
+	std::string db_vfatPos = row["VFAT_POSN"].data<std::string>();
+
+	if (m_printValues) {
+	  std::cout << "db: " << db_spChSerNum << ", " << db_chSerNum
+		    << ", " << db_depth << ", vfatAddr=" << db_vfatAddr
+		    << ", vfatName=" << db_vfatName
+		    << ", vfatPos=" << db_vfatPos << "\n";
+	}
+
+	int vfatPos=-1, dep=0, vfatType=-1;
+	uint16_t vfatId=0;
+	{
+	  std::stringstream ssd(db_depth); ssd>>dep;
+	  std::stringstream sspos(db_vfatPos); sspos>>vfatPos;
+	  vfatType = (db_vfatName.find("VFAT2")!=std::string::npos) ? 2 : -1;
+	  vfatId= atoi(db_vfatAddr.c_str());
+	}
+	vfats.vfat_position.push_back(vfatPos);
+	vfats.depth.push_back(dep);
+	vfats.vfatType.push_back(vfatType);
+	vfats.vfatId.push_back(vfatId);
+      }
+      catch ( const std::exception & e ) {
+	std::cout << "exception " << e.what() << " caught\n";
+	//continue;
+      }
+    } // cursor.next
+
+    // store the entry
+    elmap.theVFatMap_.push_back(vfats);
+    qc8conf->elMap_.push_back(elmap);
+
+    // cleanup
+    delete query1;
+  }
+
+  std::cout << "\nGEMQC8ConfSourceHandler readGEMQC8EMap done" << std::endl;
 }

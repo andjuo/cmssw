@@ -112,3 +112,60 @@ void GEMELMap::convertDummy(GEMROmap & romap) {
     romap.add(sMap, cMap);
   }
 }
+
+
+void GEMELMap::print(std::ostream &out, int detailed, int checkArrays) const
+{
+  out << "GEMELMap: theVFATMap[" << theVFatMap_.size() << "], theStripMap_"
+      << theStripMap_.size() << "]\n";
+  if (detailed) {
+    out << "  theVFATMap[" << theVFatMap_.size() << "]:\n";
+    for (unsigned int i=0; i<theVFatMap_.size(); i++) {
+      const GEMVFatMap *ptr= & theVFatMap_.at(i);
+      unsigned int sz= ptr->vfat_position.size();
+      out << " i=" << i << ", VFATmapTypeId=" << ptr->VFATmapTypeId << ", sz="
+	  << sz << "\n";
+      int ok=1;
+      if (checkArrays) {
+	if ((sz!=ptr->z_direction.size()) || (sz!=ptr->iEta.size()) || (sz!=ptr->iPhi.size()) || (sz!=ptr->depth.size()) || (sz!=ptr->vfatType.size()) || (sz!=ptr->vfatId.size()) || (sz!=ptr->amcId.size()) || (sz!=ptr->gebId.size()) || (sz!=ptr->sec.size())) {
+	  out << "GEMVFatMap size error : z_direction[" << ptr->z_direction.size() << "], iEta[" << ptr->iEta.size() << "], iPhi[" << ptr->iPhi.size() << "], depth[" << ptr->depth.size() << "], vfatType[" << ptr->vfatType.size() << "], vfatId[" << ptr->vfatId.size() << "], amcId[" << ptr->amcId.size() << "], gebId[" << ptr->gebId.size() << "], sec[" << ptr->sec.size() << "\n";
+	  ok=0;
+	}
+      }
+      if (ok) {
+	for (unsigned int ii=0; ii<sz; ii++) {
+	  out << " " << ii << " vfat_pos=" << ptr->vfat_position[ii];
+	  if (ii < ptr->z_direction.size()) out << " z_dir=" << ptr->z_direction[ii];
+	  if (ii < ptr->iEta.size()) out << " iEta=" << ptr->iEta[ii];
+	  if (ii < ptr->iPhi.size()) out << " iPhi=" << ptr->iPhi[ii];
+	  if (ii < ptr->depth.size()) out << " depth=" << ptr->depth[ii];
+	  if (ii < ptr->vfatType.size()) out << " vfatType=" << ptr->vfatType[ii];
+	  if (ii < ptr->amcId.size()) out << " amcId=" << ptr->amcId[ii];
+	  if (ii < ptr->gebId.size()) out << " gebId=" << ptr->gebId[ii];
+	  if (ii < ptr->sec.size()) out << " sect=" << ptr->sec[ii];
+	}
+      }
+    } // for theVFatMap_
+
+    out << " theStripMap[" << theStripMap_.size() << "]:\n";
+    for (unsigned int i=0; i<theStripMap_.size(); i++) {
+      const GEMStripMap *ptr = & theStripMap_.at(i);
+      unsigned int sz= ptr->vfatType.size();
+      out << " i=" << i << ", sz=" << sz << "\n";
+      int ok=1;
+      if (checkArrays) {
+	if ((sz!=ptr->vfatCh.size()) || (sz!=ptr->vfatStrip.size())) {
+	  out << "GEMStripMap size error : vfatType[" << ptr->vfatType.size() << "], vfatCh[" << ptr->vfatCh.size() << "], vfatStrip[" << ptr->vfatStrip.size() << "]\n";
+	  ok=0;
+	}
+      }
+      if (ok) {
+	for (unsigned int ii=0; ii<sz; ii++) {
+	  out << " " << ii << " vfatType=" << ptr->vfatType[ii]
+	      << " vfatCh=" << ptr->vfatCh[ii]
+	      << " vfatStrip=" << ptr->vfatStrip[ii] << "\n";
+	}
+      }
+    } // for theStripMap
+  } // if (detailed)
+}

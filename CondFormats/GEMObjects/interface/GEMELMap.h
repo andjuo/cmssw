@@ -4,6 +4,7 @@
 #include "CondFormats/Serialization/interface/Serializable.h"
 #include <string>
 #include <vector>
+#include <iostream>
 
 class GEMROmap;
 
@@ -17,6 +18,7 @@ class GEMELMap {
   const std::string & version() const;
   void convert(GEMROmap & romap);
   void convertDummy(GEMROmap & romap);
+  void print(std::ostream &out = std::cout, int detailed=0, int checkArrays=0) const;
 
   struct GEMVFatMap {
     int VFATmapTypeId;
@@ -60,5 +62,6 @@ class GEMELMap {
   static const int maxVFatGE21_= 6;      // vFat per eta partition in GE21
   static const int maxChan_    = 128;    // channels per vFat
   static const int amcBX_      = 25;     // amc BX to get strip bx
+  //static const uint16_t noValUInt16_ = uint16_t(-1); // "incorrect" value
 };
 #endif // GEMELMap_H

@@ -11,5 +11,6 @@ GEMQC8ConfESSource = cms.ESSource("GEMQC8ConfESSource",
     DebugMode = cms.untracked.int32(1),
     WriteDummy = cms.untracked.int32(0),#fakeData for testing
     NoDBOutput = cms.untracked.int32(1), # whether PoolDBOutputService is established
+    OnlyConfDef = cms.untracked.int32(1), # whether EMAP should be obtained
     printValues = cms.untracked.bool( True ), # whether to print obtained values
 )

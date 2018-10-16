@@ -10,6 +10,7 @@ XMLIdealGeometryESSource.DBSource = cms.untracked.PSet(
     DebugMode = cms.untracked.int32(0),
     WriteDummy = cms.untracked.int32(0),#fakeData for testing
     NoDBOutput = cms.untracked.int32(1), # whether PoolDBOutputService is established
+    OnlyConfDef = cms.untracked.int32(1), # whether to not load ELMap
     printValues = cms.untracked.bool( False ), # whether to print obtained values
     runNumber = cms.int32(1)
 )

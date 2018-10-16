@@ -1,6 +1,13 @@
 #include "CondFormats/GEMObjects/interface/GEMQC8Conf.h"
 #include "FWCore/Utilities/interface/Exception.h"
 
+GEMQC8Conf::GEMQC8Conf() :
+  run_number_(0), chSerialNums_(),
+  chPositions_(), chGasFlow_(),
+  hasELMap_(0), elMap_()
+{
+}
+
 GEMQC8Conf::GEMQC8Conf(const GEMQC8Conf *g) :
   run_number_(0), chSerialNums_(),
   chPositions_(), chGasFlow_(),

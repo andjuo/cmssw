@@ -14,7 +14,6 @@
 //#include <fstream>
 #include <vector>
 #include <sstream>
-#include <cstdlib>
 
 //inline void HERE(std::string msg)
 //{ std::cout << msg << std::endl; }
@@ -84,6 +83,30 @@ void popcon::GEMQC8ConfSourceHandler::getNewObjects()
     ConnectOnlineDB( m_connect, m_connectionPset );
     readGEMQC8Conf();
     if (!m_onlyConfDef) readGEMQC8EMap();
+    DisconnectOnlineDB();
+  }
+  else if (m_dummy==-1) {
+    std::cout << "\n putting dummy data to match GEM INT2R\n\n";
+    float flow=111. + 1e-3*m_runNumber;
+    qc8conf->run_number_ = m_runNumber;
+    qc8conf->chSerialNums_.push_back("GE1/1-VII-L-CERN-0002");
+    qc8conf->chPositions_.push_back("1/1/T");
+    qc8conf->chGasFlow_.push_back(flow);
+    qc8conf->chSerialNums_.push_back("GE1/1-VII-L-CERN-0001");
+    qc8conf->chPositions_.push_back("1/1/B");
+    qc8conf->chGasFlow_.push_back(flow);
+    qc8conf->chSerialNums_.push_back("GE1/1-VII-S-CERN-0002");
+    qc8conf->chPositions_.push_back("1/2/T");
+    qc8conf->chGasFlow_.push_back(flow);
+    qc8conf->chSerialNums_.push_back("GE1/1-VII-S-CERN-0001");
+    qc8conf->chPositions_.push_back("1/2/B");
+    qc8conf->chGasFlow_.push_back(flow);
+    ConnectOnlineDB( m_connect, m_connectionPset );
+    std::cout << "m_onlyConfDef=" << m_onlyConfDef << std::endl;
+    if (!m_onlyConfDef) {
+      readGEMQC8EMap();
+      qc8conf->hasELMap_=1;
+    }
     DisconnectOnlineDB();
   }
   else {
@@ -248,7 +271,7 @@ void popcon::GEMQC8ConfSourceHandler::readGEMQC8EMap()
     std::string condition;
     {
       std::stringstream ssCond;
-      ssCond << "CHMBR_SER_NUM = " << qc8conf->chSerNum(ich);
+      ssCond << "CHMBR_SER_NUM = '" << qc8conf->chSerNum(ich) << "'";
       condition = ssCond.str();
     }
 
@@ -269,25 +292,30 @@ void popcon::GEMQC8ConfSourceHandler::readGEMQC8EMap()
 	std::string db_vfatName = row["VFAT_NAME"].data<std::string>();
 	std::string db_vfatPos = row["VFAT_POSN"].data<std::string>();
 
-	if (m_printValues) {
-	  std::cout << "db: " << db_spChSerNum << ", " << db_chSerNum
-		    << ", " << db_depth << ", vfatAddr=" << db_vfatAddr
-		    << ", vfatName=" << db_vfatName
-		    << ", vfatPos=" << db_vfatPos << "\n";
-	}
-
 	int vfatPos=-1, dep=0, vfatType=-1;
 	uint16_t vfatId=0;
 	{
 	  std::stringstream ssd(db_depth); ssd>>dep;
 	  std::stringstream sspos(db_vfatPos); sspos>>vfatPos;
 	  vfatType = (db_vfatName.find("VFAT2")!=std::string::npos) ? 2 : -1;
-	  vfatId= atoi(db_vfatAddr.c_str());
+	  std::stringstream ssid(db_vfatAddr); ssid>>std::hex>>vfatId;
 	}
 	vfats.vfat_position.push_back(vfatPos);
 	vfats.depth.push_back(dep);
 	vfats.vfatType.push_back(vfatType);
 	vfats.vfatId.push_back(vfatId);
+
+	if (m_printValues) {
+	  std::cout << "db: " << db_spChSerNum << ", " << db_chSerNum
+		    << ", " << db_depth << ", vfatAddr=" << db_vfatAddr
+		    << ", vfatName=" << db_vfatName
+		    << ", vfatPos=" << db_vfatPos << "\n";
+	  std::cout <<"    - converted " << dep << " 0x"
+		    << std::hex << vfatId << std::dec << " "
+		    << vfatType << " " << vfatPos << "\n";
+	}
+
+
       }
       catch ( const std::exception & e ) {
 	std::cout << "exception " << e.what() << " caught\n";

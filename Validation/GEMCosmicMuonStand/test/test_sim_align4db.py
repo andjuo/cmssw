@@ -86,6 +86,7 @@ process.load('RecoLocalMuon.GEMRecHit.gemLocalReco_cff')
 process.XMLIdealGeometryESSource.useDB = cms.untracked.bool(True)
 process.XMLIdealGeometryESSource.DBSource.runNumber = cms.int32(options.runNum)
 process.XMLIdealGeometryESSource.DBSource.printNumbers = cms.bool(True)
+process.XMLIdealGeometryESSource.DBSource.WriteDummy = cms.untracked.int32(-1)
 
 # Config importation & settings
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(options.eventsPerJob))

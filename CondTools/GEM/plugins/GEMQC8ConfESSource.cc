@@ -24,7 +24,7 @@ std::unique_ptr<GEMQC8Conf> GEMQC8ConfESSource::produce(const GEMQC8ConfRcd&)
   //(*qc8conf).assign(*srcHandler.getQC8conf());
 
   if (!qc8conf) std::cout << "qc8conf is null" << std::endl;
-  else { std::cout << "constructed qc8conf "; qc8conf->print(std::cout); }
+  else { std::cout << "constructed qc8conf "; qc8conf->print(std::cout,1); }
   std::cout << "quitting the produce !!!" << std::endl;
   return qc8conf;
 }

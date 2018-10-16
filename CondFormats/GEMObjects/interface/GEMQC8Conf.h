@@ -9,7 +9,7 @@
 class GEMQC8Conf {
 
  public:
-  GEMQC8Conf(){}
+  GEMQC8Conf();
   GEMQC8Conf(const GEMQC8Conf *);
   ~GEMQC8Conf(){}
 

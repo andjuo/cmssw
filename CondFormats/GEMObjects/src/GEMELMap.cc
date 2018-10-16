@@ -116,7 +116,7 @@ void GEMELMap::convertDummy(GEMROmap & romap) {
 
 void GEMELMap::print(std::ostream &out, int detailed, int checkArrays) const
 {
-  out << "GEMELMap: theVFATMap[" << theVFatMap_.size() << "], theStripMap_"
+  out << "GEMELMap: theVFATMap[" << theVFatMap_.size() << "], theStripMap["
       << theStripMap_.size() << "]\n";
   if (detailed) {
     out << "  theVFATMap[" << theVFatMap_.size() << "]:\n";
@@ -140,9 +140,11 @@ void GEMELMap::print(std::ostream &out, int detailed, int checkArrays) const
 	  if (ii < ptr->iPhi.size()) out << " iPhi=" << ptr->iPhi[ii];
 	  if (ii < ptr->depth.size()) out << " depth=" << ptr->depth[ii];
 	  if (ii < ptr->vfatType.size()) out << " vfatType=" << ptr->vfatType[ii];
+	  if (ii < ptr->vfatId.size()) out << " vfatId=0x" << std::hex << ptr->vfatId[ii] << std::dec;
 	  if (ii < ptr->amcId.size()) out << " amcId=" << ptr->amcId[ii];
 	  if (ii < ptr->gebId.size()) out << " gebId=" << ptr->gebId[ii];
 	  if (ii < ptr->sec.size()) out << " sect=" << ptr->sec[ii];
+	  out << "\n";
 	}
       }
     } // for theVFatMap_

@@ -114,7 +114,12 @@ process.get = cms.EDAnalyzer("EventSetupRecordDataGetter",
         cms.PSet(
             record = cms.string('GEMQC8ConfRcd'),
             data = cms.vstring('GEMQC8Conf')
-)),
+),
+        cms.PSet(
+            record = cms.string('GEMELMapRcd'),
+            data = cms.vstring('GEMELMap')
+)
+  ),
   verbose = cms.untracked.bool(True)
 )
 

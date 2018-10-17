@@ -77,6 +77,7 @@ void popcon::GEMQC8ConfSourceHandler::getNewObjects()
   */
 
   qc8conf =  new GEMQC8Conf();
+  qc8elMap = new GEMELMap();
 
   if (m_dummy==0) {
     std::cout << "\n\tcalling ConnectOnlineDB" << std::endl;
@@ -249,6 +250,7 @@ void popcon::GEMQC8ConfSourceHandler::readGEMQC8EMap()
     std::cout << "readGEMQC8EMap is called for incorrect qc8conf\n";
     return;
   }
+  if (!qc8elMap) { qc8elMap= new GEMELMap(); }
 
   session.transaction().start( true );
   //std::cout << "transaction started" << std::endl;
@@ -326,6 +328,7 @@ void popcon::GEMQC8ConfSourceHandler::readGEMQC8EMap()
     // store the entry
     elmap.theVFatMap_.push_back(vfats);
     qc8conf->elMap_.push_back(elmap);
+    if (vfats.size()) qc8elMap->theVFatMap_.push_back(vfats);
 
     // cleanup
     delete query1;

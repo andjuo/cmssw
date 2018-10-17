@@ -34,6 +34,8 @@ class GEMELMap {
     std::vector<uint16_t> gebId;
     std::vector<int> sec; 
 
+    unsigned int size() const { return vfat_position.size(); }
+
     COND_SERIALIZABLE;
   };
   struct GEMStripMap {
@@ -41,6 +43,8 @@ class GEMELMap {
     std::vector<int> vfatCh;
     std::vector<int> vfatStrip;
  
+    unsigned int size() const { return vfatType.size(); }
+
     COND_SERIALIZABLE;
   };
 

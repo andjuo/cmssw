@@ -4,29 +4,34 @@
 GEMQC8ConfESSource::GEMQC8ConfESSource(const edm::ParameterSet &p) :
   srcHandler(p)
 {
-  setWhatProduced(this,&GEMQC8ConfESSource::produce);
+  setWhatProduced(this); //,&GEMQC8ConfESSource::produce);
   findingRecord<GEMQC8ConfRcd>();
 
   edm::LogInfo("GEMQC8ConfESProducer") << "constructor" << std::endl;
 }
 
 
-std::unique_ptr<GEMQC8Conf> GEMQC8ConfESSource::produce(const GEMQC8ConfRcd&)
+edm::ESProducts<std::shared_ptr<GEMQC8Conf>,std::shared_ptr<GEMELMap> > GEMQC8ConfESSource::produce(const GEMQC8ConfRcd&)
 {
   std::cout << "GEMQC8ConfESSource: calling getNewObjects" << std::endl;
+  srcHandler.setOnlyConfDef(0);
   srcHandler.getNewObjects();
   std::cout << "GEMQC8ConfESSource: calling getNewObjects done" << std::endl;
-  if (!srcHandler.getQC8conf()) {
+  if (!srcHandler.getQC8conf() || !srcHandler.getQC8elMap()) {
     std::cout << "GEMQC8ConfESProducer::produce failed to get a ptr" << std::endl;
   }
 
-  std::unique_ptr<GEMQC8Conf> qc8conf(new GEMQC8Conf(srcHandler.getQC8conf()));
+  std::shared_ptr<GEMQC8Conf> qc8conf(new GEMQC8Conf(srcHandler.getQC8conf()));
   //(*qc8conf).assign(*srcHandler.getQC8conf());
-
   if (!qc8conf) std::cout << "qc8conf is null" << std::endl;
-  else { std::cout << "constructed qc8conf "; qc8conf->print(std::cout,1); }
+  else { std::cout << "constructed qc8conf "; qc8conf->print(std::cout); }
+
+  std::shared_ptr<GEMELMap> qc8elMap(new GEMELMap(srcHandler.getQC8elMap()));
+  if (!qc8elMap) std::cout << "qc8elMap is null" << std::endl;
+  else { std::cout << "constructed qc8elmap "; qc8elMap->print(std::cout); }
+
   std::cout << "quitting the produce !!!" << std::endl;
-  return qc8conf;
+  return edm::es::products( std::move(qc8conf), std::move(qc8elMap) );
 }
 
 

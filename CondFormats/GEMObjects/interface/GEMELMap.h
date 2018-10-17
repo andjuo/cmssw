@@ -11,6 +11,7 @@ class GEMROmap;
 class GEMELMap {
  public:
   GEMELMap();
+  GEMELMap(const GEMELMap *ptr);
   explicit GEMELMap(const std::string & version);
 
   virtual ~GEMELMap();

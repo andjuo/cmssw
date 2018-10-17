@@ -24,10 +24,12 @@ namespace popcon
     void readGEMQC8EMap();
     std::string id() const { return m_name; }
     const GEMQC8Conf* getQC8conf() const { return qc8conf; }
+    const GEMELMap* getQC8elMap() const { return qc8elMap; }
     void setOnlyConfDef(int val) { m_onlyConfDef = val; }
 
   private:
     GEMQC8Conf * qc8conf;
+    GEMELMap * qc8elMap;
     cond::persistency::Session session;
     std::string m_name;
     int m_dummy;

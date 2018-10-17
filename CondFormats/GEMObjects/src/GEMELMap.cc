@@ -3,9 +3,21 @@
 #include "DataFormats/MuonDetId/interface/GEMDetId.h"
 
 GEMELMap::GEMELMap():
+  theVFatMap_(), theStripMap_(),
   theVersion("") {}
 
+GEMELMap::GEMELMap(const GEMELMap *ptr) :
+  theVFatMap_(), theStripMap_(),
+  theVersion("")
+{
+  if (!ptr) return;
+  theVFatMap_ = ptr->theVFatMap_;
+  theStripMap_ = ptr->theStripMap_;
+  theVersion = ptr->theVersion;
+}
+
 GEMELMap::GEMELMap(const std::string & version):
+  theVFatMap_(), theStripMap_(),
   theVersion(version) {}
 
 GEMELMap::~GEMELMap() {}

@@ -6,6 +6,7 @@ GEMQC8ConfESSource::GEMQC8ConfESSource(const edm::ParameterSet &p) :
 {
   setWhatProduced(this); //,&GEMQC8ConfESSource::produce);
   findingRecord<GEMQC8ConfRcd>();
+  findingRecord<GEMELMapRcd>();
 
   edm::LogInfo("GEMQC8ConfESProducer") << "constructor" << std::endl;
 }

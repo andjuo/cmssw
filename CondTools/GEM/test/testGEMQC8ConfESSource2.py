@@ -108,6 +108,9 @@ process.source = cms.Source( "EmptyIOVSource",
 #)
 
 process.load("CondTools.GEM.gemQC8ConfESSource_cfi")
+process.GEMQC8ConfESSource.runNumber = cms.int32( options.runNumber )
+process.GEMQC8ConfESSource.WriteDummy = cms.untracked.int32(-1)
+
 
 process.get = cms.EDAnalyzer("EventSetupRecordDataGetter",
   toGet = cms.VPSet(

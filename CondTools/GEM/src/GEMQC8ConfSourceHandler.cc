@@ -259,12 +259,22 @@ void popcon::GEMQC8ConfSourceHandler::readGEMQC8EMap()
 
   for (unsigned int ich=0; ich<qc8conf->chSerNums().size(); ich++) {
     std::cout << " readGEMQC8EMap chamber " << qc8conf->chSerNum(ich) << "\n";
+    std::string chamberPos= qc8conf->chPos(ich);
+    int sector=-1;
+    {
+      std::stringstream ss(chamberPos.c_str());
+      int ir, ic;
+      char c1;
+      ss >> ir >> c1 >> ic;
+      sector = (ir*2-1) + (ic-1)*10;
+    }
 
     coral::IQuery* query1 = schema.newQuery();
     query1->addToTableList( "GEM_SPRCHMBR_OPTHYB_VFATS_VIEW");
     query1->addToOutputList("GEM_SPRCHMBR_OPTHYB_VFATS_VIEW.SPER_CHMBR_SER_NUM", "SPER_CHMBR_SER_NUM");
     query1->addToOutputList("GEM_SPRCHMBR_OPTHYB_VFATS_VIEW.CHMBR_SER_NUM", "CHMBR_SER_NUM");
     query1->addToOutputList("GEM_SPRCHMBR_OPTHYB_VFATS_VIEW.DEPTH", "DEPTH");
+    query1->addToOutputList("GEM_SPRCHMBR_OPTHYB_VFATS_VIEW.GEB_PART_ID", "GEB_ID");
     query1->addToOutputList("GEM_SPRCHMBR_OPTHYB_VFATS_VIEW.VFAT_ADDRESS", "VFAT_ADDRESS");
     query1->addToOutputList("GEM_SPRCHMBR_OPTHYB_VFATS_VIEW.VFAT_NAME", "VFAT_NAME");
     query1->addToOutputList("GEM_SPRCHMBR_OPTHYB_VFATS_VIEW.VFAT_POSN", "VFAT_POSN");
@@ -290,6 +300,7 @@ void popcon::GEMQC8ConfSourceHandler::readGEMQC8EMap()
 	std::string db_spChSerNum = row["SPER_CHMBR_SER_NUM"].data<std::string>();
 	std::string db_chSerNum = row["CHMBR_SER_NUM"].data<std::string>();
 	std::string db_depth = row["DEPTH"].data<std::string>();
+	long long   db_gebID = row["GEB_ID"].data<long long>();
 	std::string db_vfatAddr = row["VFAT_ADDRESS"].data<std::string>();
 	std::string db_vfatName = row["VFAT_NAME"].data<std::string>();
 	std::string db_vfatPos = row["VFAT_POSN"].data<std::string>();
@@ -306,17 +317,19 @@ void popcon::GEMQC8ConfSourceHandler::readGEMQC8EMap()
 	vfats.depth.push_back(dep);
 	vfats.vfatType.push_back(vfatType);
 	vfats.vfatId.push_back(vfatId);
+	vfats.gebId.push_back(static_cast<int>(db_gebID));
+	vfats.sec.push_back(sector);
 
 	if (m_printValues) {
 	  std::cout << "db: " << db_spChSerNum << ", " << db_chSerNum
-		    << ", " << db_depth << ", vfatAddr=" << db_vfatAddr
+		    << ", " << db_depth << ", gebID=" << db_gebID
+		    << ", vfatAddr=" << db_vfatAddr
 		    << ", vfatName=" << db_vfatName
 		    << ", vfatPos=" << db_vfatPos << "\n";
 	  std::cout <<"    - converted " << dep << " 0x"
 		    << std::hex << vfatId << std::dec << " "
 		    << vfatType << " " << vfatPos << "\n";
 	}
-
 
       }
       catch ( const std::exception & e ) {
@@ -325,8 +338,15 @@ void popcon::GEMQC8ConfSourceHandler::readGEMQC8EMap()
       }
     } // cursor.next
 
+    GEMELMap::GEMStripMap stripMap;
+    if (vfats.size()) {
+      std::cout << "calling auto-fill" << std::endl;
+      gemELMap_vfat_autoFill(vfats,stripMap);
+    }
+
     // store the entry
     elmap.theVFatMap_.push_back(vfats);
+    elmap.theStripMap_.push_back(stripMap);
     qc8conf->elMap_.push_back(elmap);
     if (vfats.size()) qc8elMap->theVFatMap_.push_back(vfats);
 
@@ -335,4 +355,34 @@ void popcon::GEMQC8ConfSourceHandler::readGEMQC8EMap()
   }
 
   std::cout << "\nGEMQC8ConfSourceHandler readGEMQC8EMap done" << std::endl;
+}
+
+
+void popcon::GEMQC8ConfSourceHandler::gemELMap_vfat_autoFill(GEMELMap::GEMVFatMap &vfats, GEMELMap::GEMStripMap &stripMap)
+{
+  std::cout << "GEMQC8ConfSourceHandler::gemELMap_vfat_autoFill BEGIN" << std::endl;
+
+  if (vfats.size()==0) { std::cout << "no vfats" << std::endl; return; }
+
+  std::vector<int> vft;
+  for (unsigned int i=0; i<vfats.size(); i++) {
+    int pos= vfats.vfat_position[i];
+    vfats.z_direction.push_back(-2);
+    vfats.iEta.push_back(8-pos%8);
+    vfats.iPhi.push_back(pos/8);
+    if (std::find(vft.begin(),vft.end(),vfats.vfatType[i])==vft.end()) {
+      vft.push_back(vfats.vfatType[i]);
+      // dummy strip map
+      for (int i=0; i<127; i++) {
+	stripMap.vfatType.push_back(vfats.vfatType[i]);
+	stripMap.vfatCh.push_back(i+1);
+	stripMap.vfatStrip.push_back(i+1);
+      }
+    }
+    vfats.amcId.push_back(1);
+    vfats.gebId.push_back(1);
+    vfats.sec.push_back(1);
+  }
+
+  std::cout << "GEMQC8ConfSourceHandler::gemELMap_vfat_autoFill END" << std::endl;
 }

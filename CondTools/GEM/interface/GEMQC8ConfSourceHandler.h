@@ -27,6 +27,9 @@ namespace popcon
     const GEMELMap* getQC8elMap() const { return qc8elMap; }
     void setOnlyConfDef(int val) { m_onlyConfDef = val; }
 
+    // temporary function
+    void gemELMap_vfat_autoFill(GEMELMap::GEMVFatMap &vfats, GEMELMap::GEMStripMap &stripMap);
+
   private:
     GEMQC8Conf * qc8conf;
     GEMELMap * qc8elMap;

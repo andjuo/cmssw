@@ -15,6 +15,11 @@
 #include "CondFormats/GEMObjects/interface/GEMELMap.h"
 #include "CondFormats/DataRecord/interface/GEMELMapRcd.h"
 
+#include "GeometryReaders/XMLIdealGeometryESSource/interface/GeometryConfiguration.h"
+#include "DetectorDescription/Core/interface/DDCompactView.h"
+#include "Geometry/Records/interface/IdealGeometryRecord.h"
+
+
 class GEMQC8ConfESSource : public edm::ESProducer, public edm::EventSetupRecordIntervalFinder {
  public:
   GEMQC8ConfESSource(const edm::ParameterSet&);
@@ -22,6 +27,7 @@ class GEMQC8ConfESSource : public edm::ESProducer, public edm::EventSetupRecordI
 
   std::unique_ptr<GEMQC8Conf> produce_QC8Conf(const GEMQC8ConfRcd&);
   std::unique_ptr<GEMELMap>   produce_ELMap(const GEMELMapRcd&);
+  std::unique_ptr<DDCompactView> produce_Geom(const IdealGeometryRecord&);
 
  protected:
   void setIntervalFor(const edm::eventsetup::EventSetupRecordKey &,
@@ -29,6 +35,10 @@ class GEMQC8ConfESSource : public edm::ESProducer, public edm::EventSetupRecordI
 
  private:
   popcon::GEMQC8ConfSourceHandler srcHandler;
+
+  // geometrical description of superchambers
+  GeometryConfiguration geoConfig_;
+  std::string rootNodeName_;
 };
 
 

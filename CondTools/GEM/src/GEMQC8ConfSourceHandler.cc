@@ -20,6 +20,8 @@
 
 
 popcon::GEMQC8ConfSourceHandler::GEMQC8ConfSourceHandler( const edm::ParameterSet& ps ):
+  qc8conf(NULL),
+  qc8elMap(NULL),
   m_name( ps.getUntrackedParameter<std::string>( "name", "GEMQC8ConfSourceHandler" ) ),
   m_dummy( ps.getUntrackedParameter<int>( "WriteDummy", 0 ) ),
   m_debugMode( ps.getUntrackedParameter<int>( "DebugMode", 0 ) ),
@@ -48,6 +50,8 @@ popcon::GEMQC8ConfSourceHandler::GEMQC8ConfSourceHandler( const edm::ParameterSe
 
 popcon::GEMQC8ConfSourceHandler::~GEMQC8ConfSourceHandler()
 {
+  if (qc8conf) { delete qc8conf; }
+  if (qc8elMap) { delete qc8elMap; }
 }
 
 
@@ -75,6 +79,9 @@ void popcon::GEMQC8ConfSourceHandler::getNewObjects()
     }
   }
   */
+
+  if (qc8conf) { delete qc8conf; }
+  if (qc8elMap) { delete qc8elMap; }
 
   qc8conf =  new GEMQC8Conf();
   qc8elMap = new GEMELMap();
@@ -367,7 +374,7 @@ void popcon::GEMQC8ConfSourceHandler::gemELMap_vfat_autoFill(GEMELMap::GEMVFatMa
   std::vector<int> vft;
   for (unsigned int i=0; i<vfats.size(); i++) {
     int pos= vfats.vfat_position[i];
-    vfats.z_direction.push_back(-2);
+    vfats.z_direction.push_back(-1);
     vfats.iEta.push_back(8-pos%8);
     vfats.iPhi.push_back(pos/8);
     if (std::find(vft.begin(),vft.end(),vfats.vfatType[i])==vft.end()) {

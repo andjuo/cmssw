@@ -110,7 +110,7 @@ process.source = cms.Source( "EmptyIOVSource",
 process.load("CondTools.GEM.gemQC8ConfESSource_cfi")
 process.GEMQC8ConfESSource.runNumber = cms.int32( options.runNumber )
 process.GEMQC8ConfESSource.WriteDummy = cms.untracked.int32(-1)
-
+process.GEMQC8ConfESSource.OnlyConfDef = cms.untracked.int32(0)
 
 process.get = cms.EDAnalyzer("EventSetupRecordDataGetter",
   toGet = cms.VPSet(
@@ -127,8 +127,12 @@ process.get = cms.EDAnalyzer("EventSetupRecordDataGetter",
 )
 
 
-process.reader = cms.EDAnalyzer( "GEMQC8ConfDBReader",
+process.reader_conf = cms.EDAnalyzer( "GEMQC8ConfDBReader",
                                  dumpFileName = cms.untracked.string( "dumpQC8conf.out" )
+)
+
+process.reader_elmap = cms.EDAnalyzer( "GEMELMapDBReader",
+                                 dumpFileName = cms.untracked.string( "dumpELMap.out" )
 )
 
 #Path definition
@@ -136,4 +140,6 @@ process.reader = cms.EDAnalyzer( "GEMQC8ConfDBReader",
 
 #process.p = cms.Path( process.WriteInDB )
 #process.p = cms.Path( )
-process.p = cms.Path( process.get )
+
+#process.p = cms.Path( process.get )
+process.p = cms.Path( process.get + process.reader_conf + process.reader_elmap )

@@ -20,7 +20,8 @@ class GEMQC8ConfESSource : public edm::ESProducer, public edm::EventSetupRecordI
   GEMQC8ConfESSource(const edm::ParameterSet&);
   ~GEMQC8ConfESSource() override {}
 
-  edm::ESProducts<std::shared_ptr<GEMQC8Conf>,std::shared_ptr<GEMELMap> > produce(const GEMQC8ConfRcd&);
+  std::unique_ptr<GEMQC8Conf> produce_QC8Conf(const GEMQC8ConfRcd&);
+  std::unique_ptr<GEMELMap>   produce_ELMap(const GEMELMapRcd&);
 
  protected:
   void setIntervalFor(const edm::eventsetup::EventSetupRecordKey &,

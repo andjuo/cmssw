@@ -33,10 +33,6 @@ SuperChType = ['L','L','L','L','L',\
                'L','L','L','L','L',\
                'L','L','L','L','L']
 
-SuperChType = ['L','L','0','L','L',\
-               'S','S','0','0','0',\
-               'L','L','0','L','L']
-			
 # Alignment of chambers
 trueDx = [0.4,-0.1,-0.2,-0.5,0.2,\
           -0.4,0.1,0.3,-0.3,0.2,\
@@ -57,7 +53,8 @@ rotationZ = [0,0,0,0,0,\
 
 from Configuration.StandardSequences.Eras import eras
 
-process = cms.Process('RECO',eras.phase2_muon,eras.run2_GEM_2017)
+# eras.run2_GEM_2017 makes GEM packer/unpacker to use DB (GEMELMapRcd)
+process = cms.Process('RECO',eras.phase2_muon) #,eras.run2_GEM_2017)
 
 # import of standard configurations
 process.load('Configuration.StandardSequences.Services_cff')
@@ -82,13 +79,16 @@ process.load('EventFilter.GEMRawToDigi.muonGEMDigis_cfi')
 process.load('SimMuon.GEMCosmicMuon.muonGEMDigi_cff')
 process.load('RecoLocalMuon.GEMRecHit.gemLocalReco_cff')
 
-process.GEMQC8ConfESSource.WriteDummy = cms.untracked.int32(-1)
+# For debug purposes - use what is already in GEM DB
+#if hasattr(process, 'GEMQC8ConfESSource'):
+#    process.GEMQC8ConfESSource.WriteDummy = cms.untracked.int32(-1)
 
-##process.XMLIdealGeometryESSource.spChmbrNames = cms.vstring(SuperChType)
-#process.XMLIdealGeometryESSource.useDB = cms.untracked.bool(True)
-#process.XMLIdealGeometryESSource.DBSource.runNumber = cms.int32(options.runNum)
-#process.XMLIdealGeometryESSource.DBSource.printNumbers = cms.bool(True)
-#process.XMLIdealGeometryESSource.DBSource.WriteDummy = cms.untracked.int32(-1)
+process.GEMQC8ConfESSource.runNumber = cms.int32( options.runNum )
+
+#process.gemPacker.useDBEMap = cms.bool(True)
+process.gemPacker.name = cms.string('gemPacker--cfgFile')
+#process.muonGEMDigis.useDBEMap = cms.bool(True)
+process.muonGEMDigis.name = cms.string('gemUnPacker--cfgFile')
 
 # Config importation & settings
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(options.eventsPerJob))
@@ -96,9 +96,6 @@ import configureRun_cfi as runConfig
 nIdxJob = int(options.idxJob)
 strOutput = "out_reco_MC.root" if nIdxJob >= 0 else runConfig.OutputFileName
 if nIdxJob < 0: nIdxJob = 0
-
-# does not work
-#process.esprefer_XMLIdealGeometryESProducer = cms.ESPrefer("GEMQC8ConfESSource:","GEMCosmicStandGeomESSource")
 
 # Input source
 process.source = cms.Source("EmptySource",

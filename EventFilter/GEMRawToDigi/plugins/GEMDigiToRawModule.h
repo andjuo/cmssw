@@ -42,6 +42,7 @@ class GEMDigiToRawModule : public edm::global::EDProducer<edm::RunCache<GEMROmap
   int event_type_;
   edm::EDGetTokenT<GEMDigiCollection> digi_token;
   bool useDBEMap_;  
+  std::string name_;
 };
 DEFINE_FWK_MODULE(GEMDigiToRawModule);
 #endif

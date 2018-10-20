@@ -19,8 +19,12 @@ using namespace gem;
 GEMRawToDigiModule::GEMRawToDigiModule(const edm::ParameterSet & pset) :
   fed_token(consumes<FEDRawDataCollection>( pset.getParameter<edm::InputTag>("InputLabel") )),
   useDBEMap_(pset.getParameter<bool>("useDBEMap")),
-  unPackStatusDigis_(pset.getParameter<bool>("unPackStatusDigis"))
+  unPackStatusDigis_(pset.getParameter<bool>("unPackStatusDigis")),
+  name_(pset.getParameter<std::string>("name"))
 {
+
+  std::cout << "GEMRawToDigiModule::constructor name=" << name_ << ", useDBEMap_=" << useDBEMap_ << std::endl;
+
   produces<GEMDigiCollection>(); 
   if (unPackStatusDigis_){
     produces<GEMVfatStatusDigiCollection>("vfatStatus");
@@ -35,12 +39,14 @@ void GEMRawToDigiModule::fillDescriptions(edm::ConfigurationDescriptions & descr
   desc.add<edm::InputTag>("InputLabel", edm::InputTag("rawDataCollector")); 
   desc.add<bool>("useDBEMap", false);
   desc.add<bool>("unPackStatusDigis", false);
+  desc.add<std::string>("name","default");
   descriptions.add("muonGEMDigisDefault", desc);  
 }
 
 std::shared_ptr<GEMROmap> GEMRawToDigiModule::globalBeginRun(edm::Run const&, edm::EventSetup const& iSetup) const
 {
   auto gemORmap = std::make_shared<GEMROmap>();
+  std::cout << "GEMRawToDigiModule::globalBeginRun name=" << name_ << ", useDBEMap_=" << useDBEMap_ << std::endl;
   if (useDBEMap_){
     edm::ESHandle<GEMELMap> gemEMapRcd;
     iSetup.get<GEMELMapRcd>().get(gemEMapRcd);

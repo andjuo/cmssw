@@ -308,7 +308,7 @@ void popcon::GEMQC8ConfSourceHandler::readGEMQC8EMap()
     // get values
     query1->setCondition( condition, conditionData );
     coral::ICursor& cursor = query1->execute();
-    std::cout<<"cursor OK"<<std::endl;
+    //std::cout<<"cursor OK"<<std::endl;
     GEMELMap elmap;
     GEMELMap::GEMVFatMap vfats;
     vfats.VFATmapTypeId=-1;
@@ -375,7 +375,7 @@ void popcon::GEMQC8ConfSourceHandler::readGEMQC8EMap()
 
     GEMELMap::GEMStripMap stripMap;
     if (vfats.size()) {
-      std::cout << "calling auto-fill" << std::endl;
+      //std::cout << "calling auto-fill" << std::endl;
       if (!gemELMap_vfat_autoFill(qc8conf->chSerNum(ich),vfats,stripMap,elMapAid)) {
 	std::cout << "auto-fill failed" << std::endl;
 	return;
@@ -407,9 +407,13 @@ void popcon::GEMQC8ConfSourceHandler::readGEMQC8EMap()
 
 int popcon::GEMQC8ConfSourceHandler::gemELMap_vfat_autoFill(const std::string &chamberName, GEMELMap::GEMVFatMap &vfats, GEMELMap::GEMStripMap &stripMap, GEMELMapHelper &elMapAid)
 {
-  std::cout << "GEMQC8ConfSourceHandler::gemELMap_vfat_autoFill BEGIN" << std::endl;
+  const int dloc=0;
+  if (dloc) std::cout << "GEMQC8ConfSourceHandler::gemELMap_vfat_autoFill BEGIN" << std::endl;
 
-  if (vfats.size()==0) { std::cout << "no vfats" << std::endl; return 1; }
+  if (vfats.size()==0) {
+    if (dloc) std::cout << "no vfats" << std::endl;
+    return 1;
+  }
   const int confP5= (vfats.vfatType[0] == 2) ? 1:0;
   vfats.vfatType.clear(); // we will update this
 
@@ -427,8 +431,14 @@ int popcon::GEMQC8ConfSourceHandler::gemELMap_vfat_autoFill(const std::string &c
 
   // load new EMAP info, if needed
   if (elMapAid.chamberId() != id) {
-    std::cout << "elMapAid.chamberId=" << elMapAid.chamberId() << ", id=" << id << std::endl;
+    if (dloc) std::cout << "elMapAid.chamberId=" << elMapAid.chamberId() << ", id=" << id << std::endl;
     if (!elMapAid.load(id)) return 0;
+    if ((id== GEMELMapHelper::_chamber_longVFat2) ||
+	(id== GEMELMapHelper::_chamber_shortVFat2)) {
+      elMapAid.reverseStripOrdering();
+      elMapAid.swapStrip2ChanMap(1,2);
+      elMapAid.swapStrip2ChanMap(3,4);
+    }
   }
   vfats.VFATmapTypeId = id;
 
@@ -452,6 +462,6 @@ int popcon::GEMQC8ConfSourceHandler::gemELMap_vfat_autoFill(const std::string &c
     }
   }
 
-  std::cout << "GEMQC8ConfSourceHandler::gemELMap_vfat_autoFill END" << std::endl;
+  if (dloc) std::cout << "GEMQC8ConfSourceHandler::gemELMap_vfat_autoFill END" << std::endl;
   return 1;
 }

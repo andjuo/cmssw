@@ -86,13 +86,13 @@ process.GEMQC8ConfESSource.runNumber = cms.int32( options.runNum )
 process.GEMQC8ConfESSource.printValues = cms.untracked.bool( False )
 
 #process.gemPacker.useDBEMap = cms.bool(True)
-process.gemPacker.name = cms.string('gemPacker--cfgFile')
+#process.gemPacker.name = cms.string('gemPacker--cfgFile')
 #process.muonGEMDigis.useDBEMap = cms.bool(True)
-process.muonGEMDigis.name = cms.string('gemUnPacker--cfgFile')
+#process.muonGEMDigis.name = cms.string('gemUnPacker--cfgFile')
 
 process.reader_elmap = cms.EDAnalyzer( "GEMELMapDBReader",
-   #dumpFileName = cms.untracked.string( "dumpELMap.out" )
-   dumpFileName = cms.untracked.string( "" ) # no dump
+   dumpFileName = cms.untracked.string( "dumpELMap.out" )
+   #dumpFileName = cms.untracked.string( "" ) # no dump
 )
 
 
@@ -277,7 +277,7 @@ process.reconstruction_step = cms.Path(process.gemPacker+process.rawDataCollecto
 process.genfiltersummary_step = cms.EndPath(process.genFilterSummary)
 process.endjob_step = cms.EndPath(process.endOfProcess)
 process.FEVTDEBUGHLToutput_step = cms.EndPath(process.FEVTDEBUGHLToutput
- +process.reader_elmap
+ #+process.reader_elmap
 )
 process.validation_step = cms.Path(process.AlignmentValidationQC8)
 process.digitisation_step.remove(process.simEcalTriggerPrimitiveDigis)

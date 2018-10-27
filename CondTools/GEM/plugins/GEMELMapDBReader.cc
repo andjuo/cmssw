@@ -62,7 +62,7 @@ void GEMELMapDBReader::analyze( const edm::Event& iEvent, const edm::EventSetup&
   info->print(std::cout);
   std::cout << std::endl;
 
-  if (dumpFout_.is_open()) info->print(dumpFout_);
+  if (dumpFout_.is_open()) info->print(dumpFout_,1);
 }
 
 void GEMELMapDBReader::endJob()

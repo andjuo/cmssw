@@ -1,7 +1,10 @@
 #ifndef CondFormats_GEMObjects_GEMELMap_h
 #define CondFormats_GEMObjects_GEMELMap_h
 
+#ifndef noFileInPath_H
 #include "CondFormats/Serialization/interface/Serializable.h"
+#endif
+
 #include <string>
 #include <vector>
 #include <iostream>
@@ -17,10 +20,12 @@ class GEMELMap {
   virtual ~GEMELMap();
 
   const std::string & version() const;
+#ifndef noFileInPath
   void convert(GEMROmap & romap);
   void convertDummy(GEMROmap & romap);
-  void print(std::ostream &out = std::cout, int detailed=0, int checkArrays=0) const;
+#endif
 
+  void print(std::ostream &out = std::cout, int detailed=0, int checkArrays=0) const;
   struct GEMVFatMap {
     int VFATmapTypeId;
     std::vector<int> vfat_position;
@@ -35,6 +40,7 @@ class GEMELMap {
     std::vector<int> sec; 
 
     unsigned int size() const { return vfat_position.size(); }
+    void printLast(std::ostream &out = std::cout, int printEOL=1) const;
 
     COND_SERIALIZABLE;
   };
@@ -44,6 +50,8 @@ class GEMELMap {
     std::vector<int> vfatStrip;
  
     unsigned int size() const { return vfatType.size(); }
+    int areIdentical(const GEMELMap::GEMStripMap &mp) const;
+    void printLast(std::ostream &out = std::cout, int printEOL=1) const;
 
     COND_SERIALIZABLE;
   };

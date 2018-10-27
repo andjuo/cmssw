@@ -1,6 +1,8 @@
+#ifndef noFileInPath_H
 #include "CondFormats/GEMObjects/interface/GEMELMap.h"
 #include "CondFormats/GEMObjects/interface/GEMROmap.h"
 #include "DataFormats/MuonDetId/interface/GEMDetId.h"
+#endif
 
 GEMELMap::GEMELMap():
   theVFatMap_(), theStripMap_(),
@@ -26,6 +28,7 @@ const std::string & GEMELMap::version() const{
   return theVersion;
 }
 
+#ifndef noFileInPath_H
 void GEMELMap::convert(GEMROmap & romap) {
 
   for (auto imap : theVFatMap_){
@@ -124,6 +127,7 @@ void GEMELMap::convertDummy(GEMROmap & romap) {
     romap.add(sMap, cMap);
   }
 }
+#endif
 
 
 void GEMELMap::print(std::ostream &out, int detailed, int checkArrays) const
@@ -182,4 +186,40 @@ void GEMELMap::print(std::ostream &out, int detailed, int checkArrays) const
       }
     } // for theStripMap
   } // if (detailed)
+}
+
+
+void GEMELMap::GEMVFatMap::printLast(std::ostream &out, int printEOL) const
+{
+  out << "GEMVFatMap::printLast ";
+  if (vfat_position.size()==0) {
+    out << "empty";
+    return;
+  }
+  out << "vfat_pos=" << vfat_position.back() << " z_dir=" << z_direction.back()
+      << " iEta=" << iEta.back() << " iPhi=" << iPhi.back()
+      << " depth=" << depth.back() << " vfatType=" << vfatType.back()
+      << " vfatId=0x" << std::hex << vfatId.back() << std::dec
+      << " amcId=" << amcId.back()
+      << " gebId=" << gebId.back() << " sec=" << sec.back();
+  if (printEOL) out << "\n";
+}
+
+int GEMELMap::GEMStripMap::areIdentical(const GEMELMap::GEMStripMap &mp) const
+{
+  return ( (vfatType == mp.vfatType) &&
+	   (vfatCh == mp.vfatCh) &&
+	   (vfatStrip == mp.vfatStrip) ) ? 1:0;
+}
+
+void GEMELMap::GEMStripMap::printLast(std::ostream &out, int printEOL) const
+{
+  out << "GEMStripMap::printLast ";
+  if (vfatType.size()==0) {
+    out << "empty";
+    return;
+  }
+  out << "vfatType=" << vfatType.back() << " vfatCh=" << vfatCh.back()
+      << " vfatStrip=" << vfatStrip.back();
+  if (printEOL) out << "\n";
 }

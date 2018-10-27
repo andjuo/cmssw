@@ -13,15 +13,9 @@
 #include "RelationalAccess/ICursor.h"
 #include "CoralBase/AttributeList.h"
 #include "CoralBase/Attribute.h"
-//#include "CoralBase/AttributeSpecification.h"
 
-//#include <fstream>
 #include <vector>
 #include <sstream>
-
-//inline void HERE(std::string msg)
-//{ std::cout << msg << std::endl; }
-
 
 popcon::GEMQC8ConfSourceHandler::GEMQC8ConfSourceHandler( const edm::ParameterSet& ps ):
   qc8conf(NULL),

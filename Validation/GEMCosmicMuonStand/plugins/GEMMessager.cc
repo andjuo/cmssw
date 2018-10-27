@@ -1,6 +1,14 @@
 #ifndef GEMMessager_H
 #define GEMMessager_H
 
+/** \class GEMMessager
+ *
+ *  An EDAnalyzer to print a specified message
+ *
+ *  \author A. Juodagalvis - Vilnius University
+ *  Sep 2018
+ */
+
 //#include "FWCore/PluginManager/interface/ModuleDef.h"
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/EDAnalyzer.h"

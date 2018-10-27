@@ -136,7 +136,7 @@ int test_vfat2mapId_matching(const GEMELMapHelper &h1, std::string name1,
 		<< "\n";
     }
   }
-  
+
   return 1;
 }
 

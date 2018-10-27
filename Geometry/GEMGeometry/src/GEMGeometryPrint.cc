@@ -44,7 +44,7 @@ void printPtrAddr(const void *ptr, std::ostream &out, const char *preMsg, const 
   if (postMsg) out << postMsg;
 }
 
-/*  
+/*
 void printDetContainter(const DetContainer &dc, std::ostream &out, int detailed)
 {
   out << " [DetContainer] ";

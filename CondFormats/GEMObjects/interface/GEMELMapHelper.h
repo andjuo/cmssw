@@ -1,6 +1,15 @@
 #ifndef CondFormats_GEMObjects_GEMELMapHelper_h
 #define CondFormats_GEMObjects_GEMELMapHelper_h
 
+/** \class GEMELMapHelper
+ *
+ *  An auxiliary class to read GEMELMap vfatpos->strip2chan info from a file
+ *
+ *  \author A. Juodagalvis - Vilnius University
+ *  Oct 2018
+ */
+
+
 #ifndef noFileInPath_H
 #include "CondFormats/GEMObjects/interface/GEMELMap.h"
 #endif
@@ -25,7 +34,7 @@ public:
 		 _chamber_longVFat3bV2, _chamber_shortVFat3bV2,
 		 _chamber_last
   } TChamberId;
-    
+
 
   GEMELMapHelper();
   GEMELMapHelper(const GEMELMapHelper &h);

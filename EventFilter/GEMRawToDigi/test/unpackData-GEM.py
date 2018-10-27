@@ -185,7 +185,7 @@ process.gemRecHits = cms.EDProducer("GEMRecHitProducer",
 )
 
 
-process.reader_elmap = cms.EDAnalyzer( "GEMELMapDBReader",
+process.reader_elmap = cms.EDAnalyzer( "GEMELMapRcdReader",
        dumpFileName = cms.untracked.string( "dumpELMap-from-ALCADB.out" )
 )
 

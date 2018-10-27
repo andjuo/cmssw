@@ -71,7 +71,7 @@ process.GEMQC8ConfESSource = cms.ESSource( "PoolDBESSource",
                                                       ),
                                    )
 
-process.reader = cms.EDAnalyzer( "GEMQC8ConfDBReader",
+process.reader = cms.EDAnalyzer( "GEMQC8ConfRcdReader",
                                  dumpFileName = cms.untracked.string( "dumpQC8conf.out" )
 )
 
@@ -87,7 +87,7 @@ process.esretrieval = cms.EDAnalyzer( "PrintEventSetupDataRetrieval",
                                       printProviders = cms.untracked.bool( True )
                                       )
 
-process.reader_elmap = cms.EDAnalyzer( "GEMELMapDBReader",
+process.reader_elmap = cms.EDAnalyzer( "GEMELMapRcdReader",
                                  dumpFileName = cms.untracked.string( "dumpELMap-from-sqlite-v2.out" )
 )
 

@@ -3,7 +3,8 @@
 
 /** A helper unit to print GEMGeometry classes
  *
- *  \author A. Juodagalvis - Vilnius University, Sep 2018
+ *  \author A. Juodagalvis - Vilnius University
+ *  Sep 2018
  */
 
 #include "DataFormats/DetId/interface/DetId.h"

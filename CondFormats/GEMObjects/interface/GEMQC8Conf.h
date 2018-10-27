@@ -1,6 +1,16 @@
 #ifndef CondFormats_GEMObjects_GEMQC8Conf_h
 #define CondFormats_GEMObjects_GEMQC8Conf_h
 
+/** \class GEMQC8Conf
+ *
+ *  A class contains definition of the QC8 (cosmic stand) configuration
+ *  It is used for GEMQC8ConfRcd
+ *
+ *  \author A. Juodagalvis - Vilnius University
+ *  Oct 2018
+ */
+
+
 #include "CondFormats/Serialization/interface/Serializable.h"
 #include "CondFormats/GEMObjects/interface/GEMELMap.h"
 #include <vector>

@@ -1,12 +1,21 @@
 #ifndef CondTools_GEM_GEMQC8ConfSourceHandler_h
 #define CondTools_GEM_GEMQC8ConfSourceHandler_h
 
+/** \class GEMQC8ConfSourceHandler
+ *
+ *  Used for interaction with DB to get GEMQC8Conf and GEMELMap records
+ *  Relies on GEMELMapHelper to fill vfatpos->strip2chan mapping
+ *
+ *  \author A. Juodagalvis - Vilnius University
+ *  Oct 2018
+ */
+
+
 #include "CondCore/PopCon/interface/PopConSourceHandler.h"
 #include "CondFormats/GEMObjects/interface/GEMQC8Conf.h"
 #include "CondFormats/GEMObjects/interface/GEMELMap.h"
 #include "CondFormats/GEMObjects/interface/GEMELMapHelper.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
-//#include "CoralBase/TimeStamp.h"
 
 #include <string>
 

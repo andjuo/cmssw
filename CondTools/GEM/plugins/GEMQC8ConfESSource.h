@@ -1,5 +1,16 @@
-#ifndef CondTools_GEM_plugins_GEMQC8ConfESProducer_h
-#define CondTools_GEM_plugins_GEMQC8ConfESProducer_h
+#ifndef CondTools_GEM_plugins_GEMQC8ConfESSource_h
+#define CondTools_GEM_plugins_GEMQC8ConfESSource_h
+
+/** \class GEMQC8ConfESSource
+ *
+ *  A class to produce 3 records required for GEMQC8 stand:
+ *  - chamber setup (GEMQC8ConfRcd)
+ *  - geometrical definition (IdealGeometryRecord)
+ *  - electronics map (GEMELMapRcd)
+ *
+ *  \author A. Juodagalvis - Vilnius University
+ *  Oct 2018
+ */
 
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/Framework/interface/ESHandle.h"

@@ -117,7 +117,7 @@ process.get = cms.EDAnalyzer("EventSetupRecordDataGetter",
 )
 
 
-process.reader = cms.EDAnalyzer( "GEMQC8ConfDBReader",
+process.reader = cms.EDAnalyzer( "GEMQC8ConfRcdReader",
                                  dumpFileName = cms.untracked.string( "dumpQC8conf.out" )
 )
 

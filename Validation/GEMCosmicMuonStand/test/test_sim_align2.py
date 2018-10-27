@@ -1,7 +1,7 @@
 # Auto generated configuration file
-# using: 
-# Revision: 1.19 
-# Source: /local/reps/CMSSW/CMSSW/Configuration/Applications/python/ConfigBuilder.py,v 
+# using:
+# Revision: 1.19
+# Source: /local/reps/CMSSW/CMSSW/Configuration/Applications/python/ConfigBuilder.py,v
 # with command line options: SingleMuPt100_cfi -s GEN,SIM,DIGI,L1,DIGI2RAW,RAW2DIGI,L1Reco,RECO --conditions auto:run2_mc --magField 38T_PostLS1 --datatier GEN-SIM --geometry GEMCosmicStand --eventcontent FEVTDEBUGHLT --era phase2_muon -n 100 --fileout out_reco.root
 import datetime
 print datetime.datetime.now()
@@ -15,12 +15,10 @@ options.register("runNum",1,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  "Run number")
-                 
 options.register("eventsPerJob",2,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  "The number of events (in each file)")
-                 
 options.register("idxJob","-1",
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
@@ -32,7 +30,7 @@ options.parseArguments()
 SuperChType = ['L','L','L','L','L',\
                'L','L','L','L','L',\
                'L','L','L','L','L']
-			
+
 # Alignment of chambers
 trueDx = [0.4,-0.1,-0.2,-0.5,0.2,\
           -0.4,0.1,0.3,-0.3,0.2,\
@@ -98,10 +96,10 @@ strOutput = "out_reco_MC.root" if nIdxJob >= 0 else runConfig.OutputFileName
 if nIdxJob < 0: nIdxJob = 0
 
 # Input source
-process.source = cms.Source("EmptySource", 
-    firstRun = cms.untracked.uint32(options.runNum), 
-    firstEvent = cms.untracked.uint32(options.eventsPerJob * nIdxJob + 1), 
-    firstLuminosityBlock = cms.untracked.uint32(nIdxJob + 1), 
+process.source = cms.Source("EmptySource",
+    firstRun = cms.untracked.uint32(options.runNum),
+    firstEvent = cms.untracked.uint32(options.eventsPerJob * nIdxJob + 1),
+    firstLuminosityBlock = cms.untracked.uint32(nIdxJob + 1),
 )
 process.options = cms.untracked.PSet()
 
@@ -161,13 +159,13 @@ process.mix = cms.EDProducer("MixingModule",
     playback = cms.untracked.bool(False),
     useCurrentProcessOnly = cms.bool(False),
     digitizers = cms.PSet(),
-    
+
     mixObjects = cms.PSet(
         mixSH = cms.PSet(
             crossingFrames = cms.untracked.vstring('MuonGEMHits'),
             input = cms.VInputTag(cms.InputTag("g4SimHits","MuonGEMHits")),
             type = cms.string('PSimHit'),
-            subdets = cms.vstring('MuonGEMHits'),            
+            subdets = cms.vstring('MuonGEMHits'),
             )
         ),
     mixTracks = cms.PSet(

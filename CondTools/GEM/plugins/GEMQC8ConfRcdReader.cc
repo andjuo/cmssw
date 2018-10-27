@@ -1,27 +1,31 @@
-#include <iostream>
+/** \class GEMQC8ConfRcdReader
+ *
+ *  An EDAnalyzer to print GEMQC8ConfRcd values
+ *
+ *  \author A. Juodagalvis - Vilnius University
+ *  Oct 2018
+ */
 
 #include "FWCore/Framework/interface/EDAnalyzer.h"
-
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
-
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
 #include "CondFormats/GEMObjects/interface/GEMQC8Conf.h"
 #include "CondFormats/DataRecord/interface/GEMQC8ConfRcd.h"
 
-#include <iomanip>
+#include <iostream>
 #include <fstream>
 
 //using namespace std;
 //using namespace edm;
 
 // class declaration
-class GEMQC8ConfDBReader : public edm::EDAnalyzer {
+class GEMQC8ConfRcdReader : public edm::EDAnalyzer {
 public:
-  explicit GEMQC8ConfDBReader( const edm::ParameterSet& );
-  ~GEMQC8ConfDBReader();
+  explicit GEMQC8ConfRcdReader( const edm::ParameterSet& );
+  ~GEMQC8ConfRcdReader();
   void beginJob();
   virtual void analyze( const edm::Event&, const edm::EventSetup& );
   void endJob();
@@ -32,16 +36,16 @@ private:
   //bool m_flag;
 };
 
-GEMQC8ConfDBReader::GEMQC8ConfDBReader( const edm::ParameterSet& iConfig ) :
+GEMQC8ConfRcdReader::GEMQC8ConfRcdReader( const edm::ParameterSet& iConfig ) :
   dumpFileName_(iConfig.getUntrackedParameter<std::string>("dumpFileName","")),
   dumpFout_()
 {
 }
 
-GEMQC8ConfDBReader::~GEMQC8ConfDBReader(){}
+GEMQC8ConfRcdReader::~GEMQC8ConfRcdReader(){}
 
 
-void GEMQC8ConfDBReader::beginJob()
+void GEMQC8ConfRcdReader::beginJob()
 {
   if (dumpFileName_.size()) {
     dumpFout_.open(dumpFileName_.c_str());
@@ -49,9 +53,9 @@ void GEMQC8ConfDBReader::beginJob()
 }
 
 
-void GEMQC8ConfDBReader::analyze( const edm::Event& iEvent, const edm::EventSetup& iSetup ) {
+void GEMQC8ConfRcdReader::analyze( const edm::Event& iEvent, const edm::EventSetup& iSetup ) {
 
-  std::cout << "====== GEMQC8ConfDBReader" << std::endl;
+  std::cout << "====== GEMQC8ConfRcdReader" << std::endl;
 
   edm::ESHandle<GEMQC8Conf> hInfo;
   iSetup.get<GEMQC8ConfRcd>().get(hInfo);
@@ -65,13 +69,13 @@ void GEMQC8ConfDBReader::analyze( const edm::Event& iEvent, const edm::EventSetu
   if (dumpFout_.is_open()) info->print(dumpFout_);
 }
 
-void GEMQC8ConfDBReader::endJob()
+void GEMQC8ConfRcdReader::endJob()
 {
   if (dumpFout_.is_open()) {
-    dumpFout_ << "GEMQC8ConfDBReader: dump done\n";
+    dumpFout_ << "GEMQC8ConfRcdReader: dump done\n";
     dumpFout_.close();
   }
 }
 
 //define this as a plug-in
-DEFINE_FWK_MODULE(GEMQC8ConfDBReader);
+DEFINE_FWK_MODULE(GEMQC8ConfRcdReader);

@@ -127,11 +127,11 @@ process.get = cms.EDAnalyzer("EventSetupRecordDataGetter",
 )
 
 
-process.reader_conf = cms.EDAnalyzer( "GEMQC8ConfDBReader",
+process.reader_conf = cms.EDAnalyzer( "GEMQC8ConfRcdReader",
                                  dumpFileName = cms.untracked.string( "dumpQC8conf.out" )
 )
 
-process.reader_elmap = cms.EDAnalyzer( "GEMELMapDBReader",
+process.reader_elmap = cms.EDAnalyzer( "GEMELMapRcdReader",
                                  dumpFileName = cms.untracked.string( "dumpELMap.out" )
 )
 

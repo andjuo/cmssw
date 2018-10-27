@@ -113,13 +113,16 @@ void popcon::GEMQC8ConfSourceHandler::getNewObjects()
     qc8conf->chSerialNums_.push_back("GE1/1-VII-S-CERN-0001");
     qc8conf->chPositions_.push_back("1/2/B");
     qc8conf->chGasFlow_.push_back(flow);
-    ConnectOnlineDB( m_connect, m_connectionPset );
+
+    qc8conf->print(std::cout,0);
+
     std::cout << "m_onlyConfDef=" << m_onlyConfDef << std::endl;
     if (!m_onlyConfDef) {
+      ConnectOnlineDB( m_connect, m_connectionPset );
       readGEMQC8EMap();
       qc8conf->hasELMap_=1;
+      DisconnectOnlineDB();
     }
-    DisconnectOnlineDB();
   }
   else {
     std::cout << "\n putting dummy data\n\n";
@@ -270,6 +273,7 @@ void popcon::GEMQC8ConfSourceHandler::readGEMQC8EMap()
 
   GEMELMapHelper elMapAid; // an object to fill GEMEMap
 
+  //std::cout << "there are " << qc8conf->chSerNums().size() << " chambers\n";
   for (unsigned int ich=0; ich<qc8conf->chSerNums().size(); ich++) {
     std::cout << " readGEMQC8EMap chamber " << qc8conf->chSerNum(ich) << "\n";
     std::string chamberPos= qc8conf->chPos(ich);
@@ -324,11 +328,21 @@ void popcon::GEMQC8ConfSourceHandler::readGEMQC8EMap()
 	uint16_t vfatId=0;
 	{
 	  char cx;
-	  std::stringstream sinp(db_sector); sinp >> cx >> cx >> cx >> cx >> iSector;
-	  sinp.str(db_depth); sinp>>dep;
-	  sinp.str(db_vfatPos); sinp>>vfatPos;
+	  std::stringstream sinp(db_sector);
+	  sinp >> cx >> cx >> cx >> cx >> iSector;
+	  if (iSector==0) {
+	    // try a different format (development DB)
+	    size_t p=db_sector.find_last_of('/');
+	    if ((p!=std::string::npos) && (p<db_sector.size())) {
+	      if (atoi(db_sector.c_str()+p+1)>0) {
+		iSector= atoi(db_sector.c_str()+p+1);
+	      }
+	    }
+	  }
+	  sinp.clear(); sinp.str(db_depth); sinp>>dep;
+	  sinp.clear(); sinp.str(db_vfatPos); sinp>>vfatPos;
 	  vfatType = (db_vfatName.find("VFAT2")!=std::string::npos) ? 2 : -1;
-	  sinp.str(db_vfatAddr); sinp>>std::hex>>vfatId;
+	  sinp.clear(); sinp.str(db_vfatAddr); sinp>>std::hex>>vfatId;
 	}
 	vfats.vfat_position.push_back(vfatPos);
 	vfats.depth.push_back(dep);
@@ -346,8 +360,9 @@ void popcon::GEMQC8ConfSourceHandler::readGEMQC8EMap()
 		    << ", vfatAddr=" << db_vfatAddr
 		    << ", vfatName=" << db_vfatName
 		    << ", vfatPos=" << db_vfatPos << "\n";
-	  std::cout <<"    - converted " << iSector << " " << dep << " 0x"
-		    << std::hex << vfatId << std::dec << " "
+	  std::cout <<"    - converted " << iSector << " " << dep
+		    << " " << static_cast<uint16_t>(db_gebID) << " 0x"
+		    << std::hex << vfatId << std::dec << " vfatType="
 		    << vfatType << " " << vfatPos << "\n";
 	}
 
@@ -375,7 +390,9 @@ void popcon::GEMQC8ConfSourceHandler::readGEMQC8EMap()
       qc8elMap->theVFatMap_.push_back(vfats);
       if (qc8elMap->theStripMap_.size()==0) qc8elMap->theStripMap_.push_back(stripMap);
       else if (! qc8elMap->theStripMap_[0].areIdentical(stripMap)) {
-	std::cout << "mixed strip2channel maps!" << std::endl;
+	std::cout << "\n\nmixed strip2channel maps!\n" << std::endl;
+	const int printDiff=1;
+	qc8elMap->theStripMap_[0].areIdentical(stripMap,printDiff);
 	return;
       }
     }
@@ -394,6 +411,7 @@ int popcon::GEMQC8ConfSourceHandler::gemELMap_vfat_autoFill(const std::string &c
 
   if (vfats.size()==0) { std::cout << "no vfats" << std::endl; return 1; }
   const int confP5= (vfats.vfatType[0] == 2) ? 1:0;
+  vfats.vfatType.clear(); // we will update this
 
   GEMELMapHelper::TChamberId id = GEMELMapHelper::_chamber_none;
   if (chamberName.find("-L-")!=std::string::npos) {
@@ -407,13 +425,20 @@ int popcon::GEMQC8ConfSourceHandler::gemELMap_vfat_autoFill(const std::string &c
     return 0;
   }
 
+  // load new EMAP info, if needed
   if (elMapAid.chamberId() != id) {
+    std::cout << "elMapAid.chamberId=" << elMapAid.chamberId() << ", id=" << id << std::endl;
     if (!elMapAid.load(id)) return 0;
-    if (!elMapAid.createStrip2ChanInfo(stripMap)) return 0;
   }
+  vfats.VFATmapTypeId = id;
 
+  // update stripMap
+  if (!elMapAid.createStrip2ChanInfo(stripMap)) return 0;
+
+  // update information about vfats
   for (unsigned int i=0; i<vfats.size(); i++) {
     int pos= vfats.vfat_position[i];
+    vfats.vfatType.push_back( elMapAid.vfat2mapId()[pos] ); // strip2ch map no
     vfats.z_direction.push_back(-1);
     int ieta= 8-pos%8;
     int iphi= pos/8;

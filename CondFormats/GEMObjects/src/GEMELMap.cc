@@ -205,11 +205,26 @@ void GEMELMap::GEMVFatMap::printLast(std::ostream &out, int printEOL) const
   if (printEOL) out << "\n";
 }
 
-int GEMELMap::GEMStripMap::areIdentical(const GEMELMap::GEMStripMap &mp) const
+int GEMELMap::GEMStripMap::areIdentical(const GEMELMap::GEMStripMap &mp, int printDiff) const
 {
-  return ( (vfatType == mp.vfatType) &&
-	   (vfatCh == mp.vfatCh) &&
-	   (vfatStrip == mp.vfatStrip) ) ? 1:0;
+  int res = ( (vfatType == mp.vfatType) &&
+	      (vfatCh == mp.vfatCh) &&
+	      (vfatStrip == mp.vfatStrip) ) ? 1:0;
+  if (!res && printDiff) {
+    if (vfatType.size()!=mp.vfatType.size()) {
+      std::cout << "areIdentical=false: sizes are different: "
+		<< vfatType.size() << " " << mp.vfatType.size() << "\n";
+    }
+    else {
+      for (unsigned int i=0; i<vfatType.size(); i++) {
+	std::cout << " i=" << i << "  " << vfatType[i] << " " << vfatCh[i]
+		  << " " << vfatStrip[i] << "  "
+		  << mp.vfatType[i] << " " << mp.vfatCh[i] << " "
+		  << mp.vfatStrip[i] << "\n";
+      }
+    }
+  }
+  return res;
 }
 
 void GEMELMap::GEMStripMap::printLast(std::ostream &out, int printEOL) const

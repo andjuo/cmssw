@@ -50,7 +50,7 @@ class GEMELMap {
     std::vector<int> vfatStrip;
  
     unsigned int size() const { return vfatType.size(); }
-    int areIdentical(const GEMELMap::GEMStripMap &mp) const;
+    int areIdentical(const GEMELMap::GEMStripMap &mp, int printDiff=0) const;
     void printLast(std::ostream &out = std::cout, int printEOL=1) const;
 
     COND_SERIALIZABLE;

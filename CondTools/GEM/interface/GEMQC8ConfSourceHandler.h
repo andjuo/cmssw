@@ -3,6 +3,8 @@
 
 #include "CondCore/PopCon/interface/PopConSourceHandler.h"
 #include "CondFormats/GEMObjects/interface/GEMQC8Conf.h"
+#include "CondFormats/GEMObjects/interface/GEMELMap.h"
+#include "CondFormats/GEMObjects/interface/GEMELMapHelper.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 //#include "CoralBase/TimeStamp.h"
 
@@ -28,7 +30,7 @@ namespace popcon
     void setOnlyConfDef(int val) { m_onlyConfDef = val; }
 
     // temporary function
-    void gemELMap_vfat_autoFill(GEMELMap::GEMVFatMap &vfats, GEMELMap::GEMStripMap &stripMap);
+    int gemELMap_vfat_autoFill(const std::string &chamberName, GEMELMap::GEMVFatMap &vfats, GEMELMap::GEMStripMap &stripMap, GEMELMapHelper &elMapAid);
 
   private:
     GEMQC8Conf * qc8conf;

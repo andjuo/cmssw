@@ -61,7 +61,7 @@ public:
 
 protected:
   TChamberId chamberId_;
-  std::vector<int> vfat2mapId_;
+  std::vector<int> vfat2mapId_;   // vfat position to mapId
   std::map<int,std::vector<int> > mapId2stripCh_;
 };
 

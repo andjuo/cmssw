@@ -23,6 +23,9 @@ GEMRawToDigiModule::GEMRawToDigiModule(const edm::ParameterSet & pset) :
   useDBEMap_(pset.getParameter<bool>("useDBEMap")),
   unPackStatusDigis_(pset.getParameter<bool>("unPackStatusDigis"))
 {
+  edm::InputTag inp= pset.getParameter<edm::InputTag>("InputLabel");
+  //std::cout << "GEMRawToDigiModule: inp = " << inp << std::endl;
+
   produces<GEMDigiCollection>(); 
   if (unPackStatusDigis_) {
     produces<GEMVfatStatusDigiCollection>("vfatStatus");
@@ -75,11 +78,14 @@ void GEMRawToDigiModule::produce(edm::StreamID iID, edm::Event & iEvent, edm::Ev
   auto gemROMap = runCache(iEvent.getRun().index());
   
   for (unsigned int id=FEDNumbering::MINGEMFEDID; id<=FEDNumbering::MAXGEMFEDID; ++id) { 
+    //std::cout << "GEMRawToDigiModule: test FED " << id << std::endl;
     const FEDRawData& fedData = fed_buffers->FEDData(id);
     
     int nWords = fedData.size()/sizeof(uint64_t);
     LogDebug("GEMRawToDigiModule") <<" words " << nWords;
-    
+
+    //std::cout << "GEMRawToDigiModule: nWords= " << nWords << std::endl;
+
     if (nWords<5) continue;
     const unsigned char * data = fedData.data();
     
@@ -88,11 +94,14 @@ void GEMRawToDigiModule::produce(edm::StreamID iID, edm::Event & iEvent, edm::Ev
     const uint64_t* word = reinterpret_cast<const uint64_t* >(data);
     
     amc13Event->setCDFHeader(*word);
+    ++word;
     amc13Event->setAMC13Header(*(++word));
     
     // Readout out AMC headers
-    for (uint8_t i = 0; i < amc13Event->nAMC(); ++i)
+    for (uint8_t i = 0; i < amc13Event->nAMC(); ++i) {
+      std::cout << "nAMC=" << amc13Event->nAMC() << std::endl;
       amc13Event->addAMCheader(*(++word));
+    }
     
     // Readout out AMC payloads
     for (uint8_t i = 0; i < amc13Event->nAMC(); ++i) {
@@ -104,6 +113,7 @@ void GEMRawToDigiModule::produce(edm::StreamID iID, edm::Event & iEvent, edm::Ev
       uint16_t amcBx = amcData->bx();
 
       // Fill GEB
+      std::cout << "amcData->davCnt=" << amcData->davCnt() << std::endl;
       for (uint8_t j = 0; j < amcData->davCnt(); ++j) {
 	auto gebData = std::make_unique<GEBdata>();
 	gebData->setChamberHeader(*(++word));
@@ -114,6 +124,7 @@ void GEMRawToDigiModule::produce(edm::StreamID iID, edm::Event & iEvent, edm::Ev
 	GEMROmap::dCoord geb_dc = gemROMap->hitPosition(geb_ec);
 	GEMDetId gemId = geb_dc.gemDetId;
 
+	std::cout << "gebData->vfatWordCnt()= " << gebData->vfatWordCnt() << std::endl;
 	for (uint16_t k = 0; k < gebData->vfatWordCnt()/3; k++) {
 	  auto vfatData = std::make_unique<VFATdata>();
 	  vfatData->read_fw(*(++word));

@@ -27,6 +27,21 @@ namespace gem {
       uint64_t uFov      : 4;  // Format version: 0x1
     };
   };
+
+  union AMC13DataDef {
+    AMC13DataDef(uint64_t d) : word(d) {}
+
+    uint64_t word;
+    struct {
+      uint64_t boardId    : 16; // board id
+      uint64_t amcNr      : 4;  // amcNr
+      uint64_t blkSeqNo   : 8;  // block sequence no
+      uint64_t cb4        : 4;  // 0x0
+      uint64_t dataSize   : 24; // amc payload size
+      uint64_t endBits8   : 8;  // c,v,p,e,s,m,l,?
+    };
+  };
+
   union AMC13Trailer {
     uint64_t word;
     struct {
@@ -74,18 +89,39 @@ namespace gem {
     uint32_t lv1Id() const {return cdfh_.lv1Id;}
     uint16_t sourceId() const {return cdfh_.sourceId;}
 
+    uint32_t get_fov() const {return (uint32_t)cdfh_.fov;}
+    uint32_t get_sourceId() const {return (uint32_t)cdfh_.sourceId;}
+    uint32_t get_bxId() const {return (uint32_t)cdfh_.bxId;}
+    uint32_t get_lv1Id() const { return (uint32_t)cdfh_.lv1Id;}
+    uint32_t get_eventType() const {return (uint32_t)cdfh_.eventType;}
+    uint32_t get_cb5() const {return (uint32_t)cdfh_.cb5;}
+
     uint8_t  nAMC() const {return amc13h_.nAMC;}
-    
+
+    uint32_t get_cb0() const {return (uint32_t)amc13h_.cb0;}
+    uint32_t get_orbitN() const {return (uint32_t)amc13h_.orbitN;}
+    uint32_t get_reserved0() const {return (uint32_t)amc13h_.reserved0;}
+    uint32_t get_nAMC() const {return (uint32_t)amc13h_.nAMC;}
+    uint32_t get_calType() const {return (uint32_t)amc13h_.calType;}
+    uint32_t get_uFov() const {return (uint32_t)amc13h_.uFov;}
+
     const std::vector<uint64_t> * getAMCheaders() const {return &amcHeaders_;}
     void addAMCheader(uint64_t word);
     void addAMCheader(uint32_t AMC_size, uint8_t Blk_No, uint8_t AMC_No, uint16_t BoardID);
+
+    uint32_t get_boardId(int i) const { AMC13DataDef d(amcHeaders_[i]); return (uint32_t)d.boardId; }
+    uint32_t get_amcNr(int i) const { AMC13DataDef d(amcHeaders_[i]); return (uint32_t)d.amcNr; }
+    uint32_t get_blkSeqNo(int i) const { AMC13DataDef d(amcHeaders_[i]); return (uint32_t)d.blkSeqNo; }
+    uint32_t get_cb4(int i) const { AMC13DataDef d(amcHeaders_[i]); return (uint32_t)d.cb4; }
+    uint32_t get_dataSize(int i) const { AMC13DataDef d(amcHeaders_[i]); return (uint32_t)d.dataSize; }
+    uint32_t get_endBits8(int i) const { AMC13DataDef d(amcHeaders_[i]); return (uint32_t)d.endBits8; }
 
     const std::vector<AMCdata> * getAMCpayloads() const {return &amcs_;}   
     void addAMCpayload(const AMCdata& a) {amcs_.push_back(a);}
     
   private:
     // AMC headers
-    std::vector<uint64_t> amcHeaders_;    
+    std::vector<uint64_t> amcHeaders_;
     // AMCs payload
     std::vector<AMCdata> amcs_;
 

@@ -189,7 +189,7 @@ process.tmtFilter.mpList = cms.untracked.vint32(options.mps)
 process.dumpRaw = cms.EDAnalyzer(
     "DumpFEDRawDataProduct",
     #label = cms.untracked.string("rawDataCollector"),
-    token = cms.untracked.InputTag("source","gemLocalModeDataSource"),
+    inputTag = cms.untracked.InputTag("source","gemLocalModeDataSource"),
     feds = cms.untracked.vint32 ( 1472 ),
     dumpPayload = cms.untracked.bool ( options.dumpRaw )
 )
@@ -198,7 +198,7 @@ process.dumpRaw = cms.EDAnalyzer(
 process.load('EventFilter.GEMRawToDigi.muonGEMDigis_cfi')
 #process.load('EventFilter.GEMRawToDigi.GEMSQLiteCabling_cfi')
 process.muonGEMDigis.InputLabel = cms.InputTag("source","gemLocalModeDataSource")
-process.muonGEMDigis.useDBEMap = False
+process.muonGEMDigis.useDBEMap = True
 
 #process.load('Geometry.GEMGeometryBuilder.gemGeometry_cfi')
 process.load('RecoLocalMuon.GEMRecHit.gemRecHits_cfi')
@@ -229,7 +229,7 @@ process.reader_elmap = cms.EDAnalyzer( "GEMELMapRcdReader",
 process.path = cms.Path(
     #process.validationEventFilter
     process.dumpRaw
-    +process.muonGEMDigis
+    #+process.muonGEMDigis
     #+process.reader_elmap
     +process.reader_qc8conf
    # +process.gemRecHits

@@ -94,12 +94,11 @@ void GEMRawToDigiModule::produce(edm::StreamID iID, edm::Event & iEvent, edm::Ev
     const uint64_t* word = reinterpret_cast<const uint64_t* >(data);
     
     amc13Event->setCDFHeader(*word);
-    ++word;
     amc13Event->setAMC13Header(*(++word));
+    std::cout << "nAMC=" << amc13Event->nAMC() << std::endl;
     
     // Readout out AMC headers
     for (uint8_t i = 0; i < amc13Event->nAMC(); ++i) {
-      std::cout << "nAMC=" << amc13Event->nAMC() << std::endl;
       amc13Event->addAMCheader(*(++word));
     }
     

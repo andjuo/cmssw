@@ -2,12 +2,13 @@
  * 
  * 
  * \author N. Amapane - S. Argiro'
- *
+ * Added token InputTag: Andrius Juodagalvis, Vilnius University, Nov 2018
 */
 
 #include <FWCore/Framework/interface/MakerMacros.h>
 #include <FWCore/Framework/interface/EDAnalyzer.h>
 #include <FWCore/Framework/interface/Event.h>
+#include <FWCore/Utilities/interface/InputTag.h>
 #include <DataFormats/FEDRawData/interface/FEDRawDataCollection.h>
 #include <DataFormats/FEDRawData/interface/FEDHeader.h>
 #include <DataFormats/FEDRawData/interface/FEDTrailer.h>
@@ -24,13 +25,19 @@ namespace test{
   class DumpFEDRawDataProduct: public EDAnalyzer{
   private:
     std::set<int> FEDids_;
-    std::string label_;
+    edm::InputTag token_;
     bool dumpPayload_;
   public:
     DumpFEDRawDataProduct(const ParameterSet& pset){
       std::vector<int> ids;
-      label_ = pset.getUntrackedParameter<std::string>("label","source");
-      consumes<FEDRawDataCollection>(label_);
+      if (pset.exists("token")) {
+	token_ = pset.getUntrackedParameter<edm::InputTag>("token",edm::InputTag("source"));
+      }
+      else {
+	std::string label = pset.getUntrackedParameter<std::string>("label","source");
+	token_ = edm::InputTag(label);
+      }
+      consumes<FEDRawDataCollection>(token_);
       ids=pset.getUntrackedParameter<std::vector<int> >("feds",std::vector<int>());
       dumpPayload_=pset.getUntrackedParameter<bool>("dumpPayload",false);
       for (std::vector<int>::iterator i=ids.begin(); i!=ids.end(); i++) 
@@ -42,7 +49,8 @@ namespace test{
       cout << "--- Run: " << e.id().run()
 	   << " Event: " << e.id().event() << endl;
       Handle<FEDRawDataCollection> rawdata;
-      e.getByLabel(label_,rawdata);
+      //e.getByLabel(label_,rawdata);
+      e.getByLabel(token_,rawdata);
       for (int i = 0; i<=FEDNumbering::lastFEDId(); i++){
 	const FEDRawData& data = rawdata->FEDData(i);
 	size_t size=data.size();

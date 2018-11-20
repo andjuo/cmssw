@@ -458,7 +458,8 @@ void popcon::GEMQC8ConfSourceHandler::readGEMQC8EMap_specDummy()
       vfats.depth.push_back(dep);
       vfats.vfatType.push_back(vfatType); // indicator of vfatType
       vfats.vfatId.push_back(vfatId);
-      vfats.amcId.push_back((vfatType==2) ? 48879 : 1); // amcId for QC8?
+      //vfats.amcId.push_back((vfatType==2) ? 48879 : 1); // amcId for QC8?
+      vfats.amcId.push_back(48879); // amcId for QC8?
       vfats.gebId.push_back(gebId);
       vfats.sec.push_back(sector); // value based on QC8 configuration
 

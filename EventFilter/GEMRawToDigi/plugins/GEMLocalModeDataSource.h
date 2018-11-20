@@ -35,15 +35,15 @@ private:
 
   bool m_hasFerolHeader;
   int m_fedid;   // which FEDId to assign
-  uint32_t m_fileindex;
-  std::unique_ptr<Storage> storage;
+  uint32_t m_fileindex; // index of currently opened file
+  std::unique_ptr<Storage> storage; // pointer to opened file
   int m_runnumber;
-  uint64_t m_data;
+  uint64_t m_data; // local buffer
   uint32_t m_currenteventnumber;
-  uint32_t m_currenttriggernumber;
-  uint32_t m_globaleventnumber;
-  int32_t m_eventnumber_shift;
+  std::vector<uint32_t> m_processEvents;
   std::unique_ptr<FEDRawDataCollection> buffers;
+  uint64_t m_nGoodEvents;
+  std::vector<uint32_t> m_goodEvents;
 };
 
 

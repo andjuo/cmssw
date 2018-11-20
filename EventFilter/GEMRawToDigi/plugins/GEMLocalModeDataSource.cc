@@ -6,6 +6,7 @@
 #include "EventFilter/GEMRawToDigi/interface/VFATdata.h"
 
 #include <fstream>
+#include <algorithm>
 
 GEMLocalModeDataSource::GEMLocalModeDataSource(const edm::ParameterSet & pset, edm::InputSourceDescription const &desc) :
   edm::ProducerSourceFromFiles(pset,desc,true), // true - RealData
@@ -14,10 +15,15 @@ GEMLocalModeDataSource::GEMLocalModeDataSource(const edm::ParameterSet & pset, e
   m_fileindex(0),
   m_runnumber( pset.getUntrackedParameter<int>("runNumber",-1)),
   m_currenteventnumber(1),
-  m_currenttriggernumber(0),
-  m_eventnumber_shift(0)
+  m_processEvents(),
+  m_nGoodEvents(0),
+  m_goodEvents()
 {
   produces<FEDRawDataCollection>("gemLocalModeDataSource");
+
+  if (pset.exists("processEvents")) {
+      m_processEvents= pset.getUntrackedParameter<std::vector<unsigned int> >("processEvents",std::vector<unsigned int>());
+  }
 
   std::cout << "there are " << this->fileNames().size() << " files: ";
   for (unsigned int i=0; i<this->fileNames().size(); i++) {
@@ -100,6 +106,13 @@ GEMLocalModeDataSource::GEMLocalModeDataSource(const edm::ParameterSet & pset, e
 
 GEMLocalModeDataSource::~GEMLocalModeDataSource()
 {
+  std::cout << "GEMLocalModeDataSource::~GEMLocalModeDataSource nGoodEvents=" << m_nGoodEvents << std::endl;
+  std::cout << " their numbers (may be limited to 100)\n";
+  for (unsigned int i=0; i<m_goodEvents.size(); i++) {
+    std::cout << " " << m_goodEvents[i];
+    if (i>99) break;
+  }
+  std::cout << "\n";
 }
 
 
@@ -126,7 +139,7 @@ void GEMLocalModeDataSource::fillDescriptions(edm::ConfigurationDescriptions & d
 
 bool GEMLocalModeDataSource::setRunAndEventInfo(edm::EventID &id, edm::TimeValue_t &time, edm::EventAuxiliary::ExperimentType &)
 {
-  std::cout << "\nsetRunAndEventInfo m_fileindex=" << m_fileindex << std::endl;
+  //std::cout << "\nsetRunAndEventInfo m_fileindex=" << m_fileindex << std::endl;
 
   if (storage->eof()) {
     storage->close();
@@ -150,14 +163,22 @@ bool GEMLocalModeDataSource::setRunAndEventInfo(edm::EventID &id, edm::TimeValue
   // create product (raw data)
   buffers.reset( new FEDRawDataCollection );
 
-  // no loop over data, assuming record is 1 event
-  m_currenteventnumber++;
-  std::cout << "GEMLocalModeDataSource::setRunAndEventInfo m_currenteventnumber=" << m_currenteventnumber << std::endl;
-
-  //std::cout << "the number= " << sizeof(uint64_t) << std::endl;
+  // assume 1 record is 1 event
   std::vector<uint64_t> buf;
   const int tmpBufSize=24;
   uint64_t tmpBuf[tmpBufSize];
+
+  int iEventRead=0;
+  do {
+  m_currenteventnumber++;
+  iEventRead++;
+  buf.clear();
+  std::cout << "GEMLocalModeDataSource::setRunAndEventInfo m_currenteventnumber=" << m_currenteventnumber << std::endl;
+
+  int prn=0;
+  if (m_currenteventnumber == 119) prn=1;
+
+  //std::cout << "the number= " << sizeof(uint64_t) << std::endl;
 
   // get CDFHeader and AMC13Header
   int n=inpFile.read((char*)tmpBuf,2*sizeof(uint64_t)); // number of bytes to read
@@ -167,10 +188,9 @@ bool GEMLocalModeDataSource::setRunAndEventInfo(edm::EventID &id, edm::TimeValue
     return false;
   }
 
-  std::cout << "got 1st data " << tmpBuf[0] << std::endl;
   buf.push_back(tmpBuf[0]);
   buf.push_back(tmpBuf[1]);
-  std::cout << "0x" << std::hex << tmpBuf[0] << " 0x" << tmpBuf[1] << std::dec << std::endl;
+  //std::cout << "0x" << std::hex << tmpBuf[0] << " 0x" << tmpBuf[1] << std::dec << std::endl;
 
   gem::AMC13Event amc13Event;
   amc13Event.setCDFHeader(tmpBuf[0]);
@@ -181,11 +201,22 @@ bool GEMLocalModeDataSource::setRunAndEventInfo(edm::EventID &id, edm::TimeValue
     return false;
   }
 
-  std::cout << "GEMLocalModeDataSource: cb5=" << amc13Event.get_cb5() << std::endl;
-  std::cout << "GEMLocalModeDataSource: cb0=" << amc13Event.get_cb0() << std::endl;
+  //std::cout << "GEMLocalModeDataSource: cb5=" << amc13Event.get_cb5() << std::endl;
+  //std::cout << "GEMLocalModeDataSource: cb0=" << amc13Event.get_cb0() << std::endl;
+
+  if ((amc13Event.get_cb5()!=5) || (amc13Event.get_cb0()!=0)) {
+    std::cout << "data format error (cb5,cb0)" << std::endl;
+    return false;
+  }
+
+
+  if (prn) {
+    std::cout << "cdfHeader sourceId=" << amc13Event.get_sourceId() << " bxId=" << amc13Event.get_bxId() << " lv1Id=" << amc13Event.get_lv1Id() << " eventType=" << amc13Event.get_eventType() << " cb5=" << amc13Event.get_cb5() << "\n";
+    std::cout << "amc13EventHeader cb0=" << amc13Event.get_cb0() << " nAMC=" << amc13Event.get_nAMC() << std::endl;
+  }
 
   // read AMC headers
-  std::cout << "GEMLocalModeDataSource: nAMC=" << amc13Event.get_nAMC() << std::endl;
+  //std::cout << "GEMLocalModeDataSource: nAMC=" << amc13Event.get_nAMC() << std::endl;
   n = inpFile.read((char*)tmpBuf, amc13Event.nAMC()*sizeof(uint64_t));
   if ((uint32_t)(n)!=amc13Event.get_nAMC()*8) {
     std::cout << " ERROR got " << n << " chk=" << amc13Event.get_nAMC()*8 << std::endl;
@@ -193,7 +224,7 @@ bool GEMLocalModeDataSource::setRunAndEventInfo(edm::EventID &id, edm::TimeValue
   for (uint8_t ii=0; ii<amc13Event.nAMC(); ii++) {
     amc13Event.addAMCheader(tmpBuf[ii]);
     buf.push_back(tmpBuf[ii]);
-    std::cout << "ii=" << ii << " cb4=" << amc13Event.get_cb4(ii) << " amcNr=" << amc13Event.get_amcNr(ii) << " dataSize=" << amc13Event.get_dataSize(ii) << std::endl;
+    //std::cout << "ii=" << ii << " cb0=" << amc13Event.get_cb0(ii) << " amcNr=" << amc13Event.get_amcNr(ii) << " dataSize=" << amc13Event.get_dataSize(ii) << std::endl;
   }
 
   // read AMC payloads
@@ -204,7 +235,11 @@ bool GEMLocalModeDataSource::setRunAndEventInfo(edm::EventID &id, edm::TimeValue
     amcData.setAMCheader1(tmpBuf[0]);
     amcData.setAMCheader2(tmpBuf[1]);
     amcData.setGEMeventHeader(tmpBuf[2]);
-    std::cout << "iamc=" << iamc << " amcData.amcNr=" << (uint32_t)(amcData.amcNum()) << " amcData.davCnt=" << (uint32_t)(amcData.davCnt()) << std::endl;
+    if (prn) {
+      std::cout << "iamc=" << iamc << " amcData.amcNr=" << (uint32_t)(amcData.amcNum()) << " amcData.davCnt=" << (uint32_t)(amcData.davCnt()) << std::endl;
+      std::cout << " --  " << amcData.getAMCheader1_str() << "\n -- " << amcData.getAMCheader2_str() << std::endl;
+      std::cout << " --  " << amcData.getGEMeventHeader_str() << std::endl;
+    }
 
     // read GEB
     for (uint8_t igeb=0; igeb<amcData.davCnt(); igeb++) {
@@ -213,7 +248,11 @@ bool GEMLocalModeDataSource::setRunAndEventInfo(edm::EventID &id, edm::TimeValue
       buf.push_back(tmpBuf[0]);
       gebData.setChamberHeader(tmpBuf[0]);
 
-      std::cout << "igeb=" << igeb << " " << (uint32_t)(gebData.vfatWordCnt()) << std::endl;
+      if (prn) {
+	std::cout << "igeb=" << igeb << " vfatWordCount=" << gebData.get_vfatWordCnt() << std::endl;
+	std::cout << " -- " << gebData.getChamberHeader_str() << std::endl;
+      }
+
       if (tmpBufSize<gebData.vfatWordCnt()) {
 	std::cout << "update code: tmpBufSize=" << tmpBufSize << ", gebData.vfatWordCnt=" << gebData.vfatWordCnt() << std::endl;
 	return false;
@@ -230,6 +269,7 @@ bool GEMLocalModeDataSource::setRunAndEventInfo(edm::EventID &id, edm::TimeValue
 
       // check
       gebData.setChamberTrailer(tmpBuf[0]);
+      if (prn) std::cout << " -- " << gebData.getChamberTrailer_str() << std::endl;
       if (gebData.vfatWordCntT() != gebData.vfatWordCnt()) {
 	std::cout << "corrupt data? gebData vfatWordCnt does not match" << std::endl;
       }
@@ -240,15 +280,38 @@ bool GEMLocalModeDataSource::setRunAndEventInfo(edm::EventID &id, edm::TimeValue
     n = inpFile.read((char*)tmpBuf, 2*sizeof(uint64_t));
     buf.push_back(tmpBuf[0]);
     buf.push_back(tmpBuf[1]);
+    if (prn) { // check
+      amcData.setGEMeventTrailer(tmpBuf[0]);
+      amcData.setAMCTrailer(tmpBuf[1]);
+      std::cout << " -- " << amcData.getGEMeventTrailer_str() << "\n -- " << amcData.getAMCtrailer_str() << std::endl;
+    }
   } // end of amc loop
 
   // read AMC13trailer and CDFTrailer
   n = inpFile.read((char*)tmpBuf, 2*sizeof(uint64_t));
   buf.push_back(tmpBuf[0]);
   buf.push_back(tmpBuf[1]);
+  if (prn) {
+    amc13Event.setAMC13Trailer(tmpBuf[0]);
+    amc13Event.setCDFTrailer(tmpBuf[1]);
+    std::cout << " -- " << amc13Event.getAMC13Trailer_str() << "\n"
+	      << " -- " << amc13Event.getCDFTrailer_str() << std::endl;
+  }
   // end of amc13Event
 
-  std::cout << "got " << buf.size() << " words\n";
+  std::cout << "GEMLocalModeDataSource got " << buf.size() << " words\n";
+  if (buf.size()>12) {
+    m_nGoodEvents++;
+    m_goodEvents.push_back(m_currenteventnumber-1);
+  }
+
+  if (m_processEvents.size() &&
+      (std::find(m_processEvents.begin(),m_processEvents.end(),m_currenteventnumber)!=m_processEvents.end())) {
+    std::cout << "got it" << std::endl;
+    break;
+  }
+  }
+  while (m_processEvents.size());
 
   //
   // create FEDRawData
@@ -272,13 +335,13 @@ bool GEMLocalModeDataSource::setRunAndEventInfo(edm::EventID &id, edm::TimeValue
 
 
 void GEMLocalModeDataSource::produce(edm::Event &event) {
-  std::cout << "GEMLocalModeDataSource::produce" << std::endl;
+  //std::cout << "GEMLocalModeDataSource::produce" << std::endl;
   event.put(std::move(buffers), "gemLocalModeDataSource");
   buffers.reset();
 }
 
 uint32_t GEMLocalModeDataSource::synchronizeEvents() {
-  std::cout << "GEMLocalModeDataSource::synchronizeEvents" << std::endl;
+  //std::cout << "GEMLocalModeDataSource::synchronizeEvents" << std::endl;
   int32_t result= m_currenteventnumber -1;
   return(uint32_t) result;
 }

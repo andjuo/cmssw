@@ -115,7 +115,7 @@ process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 process.load('Geometry.GEMGeometry.GeometryGEMCosmicStandDB_cff')
 
 # For debug purposes - use what is already in GEM DB
-process.GEMQC8ConfESSource.WriteDummy = cms.untracked.int32(-1) # -1 -- P5 chambers, -2 -- special case
+process.GEMQC8ConfESSource.WriteDummy = cms.untracked.int32(-2) # -1 -- P5 chambers, -2 -- special case
 process.GEMQC8ConfESSource.runNumber = cms.int32( options.runNum )
 process.GEMQC8ConfESSource.printValues = cms.untracked.bool( False )
 #process.myPrefer = cms.ESPrefer('DDCompactView','GEMQC8ConfESSource')
@@ -229,10 +229,10 @@ process.reader_elmap = cms.EDAnalyzer( "GEMELMapRcdReader",
 process.path = cms.Path(
     #process.validationEventFilter
     process.dumpRaw
-    #+process.muonGEMDigis
+    +process.muonGEMDigis
     #+process.reader_elmap
-    +process.reader_qc8conf
-   # +process.gemRecHits
+    #+process.reader_qc8conf
+    +process.gemRecHits
 )
 
 # enable validation event filtering

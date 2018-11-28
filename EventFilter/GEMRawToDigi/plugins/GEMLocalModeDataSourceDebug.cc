@@ -1,4 +1,4 @@
-#include "EventFilter/GEMRawToDigi/plugins/GEMLocalModeDataSource.h"
+#include "EventFilter/GEMRawToDigi/plugins/GEMLocalModeDataSourceDebug.h"
 #include "DataFormats/FEDRawData/interface/FEDRawDataCollection.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "FWCore/Utilities/interface/Exception.h"
@@ -9,7 +9,7 @@
 #include <fstream>
 #include <algorithm>
 
-GEMLocalModeDataSource::GEMLocalModeDataSource(const edm::ParameterSet & pset, edm::InputSourceDescription const &desc) :
+GEMLocalModeDataSourceDebug::GEMLocalModeDataSourceDebug(const edm::ParameterSet & pset, edm::InputSourceDescription const &desc) :
   edm::ProducerSourceFromFiles(pset,desc,true), // true - RealData
   m_hasFerolHeader( pset.getUntrackedParameter<bool>("hasFerolHeader",false)),
   m_fedid( pset.getUntrackedParameter<int>("fedId", 12345)),
@@ -84,7 +84,7 @@ GEMLocalModeDataSource::GEMLocalModeDataSource(const edm::ParameterSet & pset, e
   // (throw if storage is 0)
   if (!storage) {
     std::stringstream ss;
-    ss << "GEMLocalModeDataSource: failed to open the file";
+    ss << "GEMLocalModeDataSourceDebug: failed to open the file";
     throw cms::Exception(ss.str());
   }
 
@@ -92,9 +92,9 @@ GEMLocalModeDataSource::GEMLocalModeDataSource(const edm::ParameterSet & pset, e
  }
 
 
-GEMLocalModeDataSource::~GEMLocalModeDataSource()
+GEMLocalModeDataSourceDebug::~GEMLocalModeDataSourceDebug()
 {
-  std::cout << "GEMLocalModeDataSource::~GEMLocalModeDataSource nGoodEvents=" << m_nGoodEvents << ", nProcessedEvents=" << m_nProcessedEvents << std::endl;
+  std::cout << "GEMLocalModeDataSourceDebug::~GEMLocalModeDataSourceDebug nGoodEvents=" << m_nGoodEvents << ", nProcessedEvents=" << m_nProcessedEvents << std::endl;
   std::cout << " their numbers (may be limited to 100)\n";
   for (unsigned int i=0; i<m_goodEvents.size(); i++) {
     std::cout << " , " << m_goodEvents[i];
@@ -104,7 +104,7 @@ GEMLocalModeDataSource::~GEMLocalModeDataSource()
 }
 
 
-void GEMLocalModeDataSource::debug_studyFile()
+void GEMLocalModeDataSourceDebug::debug_studyFile()
 {
   std::cout << "\ndebug_studyFile" << std::endl;
   std::cout << "m_fileindex=" << m_fileindex << ", m_filenames.size=" << m_filenames.size() << std::endl;
@@ -167,7 +167,7 @@ void GEMLocalModeDataSource::debug_studyFile()
   std::cout << "debug_studyFile done" << std::endl;
 }
 
-void GEMLocalModeDataSource::fillDescriptions(edm::ConfigurationDescriptions & descriptions)
+void GEMLocalModeDataSourceDebug::fillDescriptions(edm::ConfigurationDescriptions & descriptions)
 {
   edm::ParameterSetDescription desc;
   desc.setComment("Reads GEM data saved in 'local mode' to produce FEDRawDataCollection.");
@@ -189,7 +189,7 @@ void GEMLocalModeDataSource::fillDescriptions(edm::ConfigurationDescriptions & d
 }
 
 
-bool GEMLocalModeDataSource::setRunAndEventInfo(edm::EventID &id, edm::TimeValue_t &time, edm::EventAuxiliary::ExperimentType &)
+bool GEMLocalModeDataSourceDebug::setRunAndEventInfo(edm::EventID &id, edm::TimeValue_t &time, edm::EventAuxiliary::ExperimentType &)
 {
   //std::cout << "\nsetRunAndEventInfo m_fileindex=" << m_fileindex << std::endl;
   if (0 && (m_currenteventnumber==1)) {
@@ -229,7 +229,7 @@ bool GEMLocalModeDataSource::setRunAndEventInfo(edm::EventID &id, edm::TimeValue
   m_currenteventnumber++;
   iEventRead++;
   buf.clear();
-  //std::cout << "GEMLocalModeDataSource::setRunAndEventInfo m_currenteventnumber=" << m_currenteventnumber << std::endl;
+  //std::cout << "GEMLocalModeDataSourceDebug::setRunAndEventInfo m_currenteventnumber=" << m_currenteventnumber << std::endl;
 
   int prn=0;
 
@@ -274,8 +274,8 @@ bool GEMLocalModeDataSource::setRunAndEventInfo(edm::EventID &id, edm::TimeValue
     return false;
   }
 
-  //std::cout << "GEMLocalModeDataSource: cb5=" << amc13Event.get_cb5() << std::endl;
-  //std::cout << "GEMLocalModeDataSource: cb0=" << amc13Event.get_cb0() << std::endl;
+  //std::cout << "GEMLocalModeDataSourceDebug: cb5=" << amc13Event.get_cb5() << std::endl;
+  //std::cout << "GEMLocalModeDataSourceDebug: cb0=" << amc13Event.get_cb0() << std::endl;
 
   if ((amc13Event.get_cb5()!=5) || (amc13Event.get_cb0()!=0)) {
     std::cout << "data format error (cb5,cb0)" << std::endl;
@@ -289,7 +289,7 @@ bool GEMLocalModeDataSource::setRunAndEventInfo(edm::EventID &id, edm::TimeValue
   }
 
   // read AMC headers
-  //std::cout << "GEMLocalModeDataSource: nAMC=" << amc13Event.get_nAMC() << std::endl;
+  //std::cout << "GEMLocalModeDataSourceDebug: nAMC=" << amc13Event.get_nAMC() << std::endl;
   n = inpFile.read((char*)tmpBuf, amc13Event.nAMC()*sizeof(uint64_t));
   if ((uint32_t)(n)!=amc13Event.get_nAMC()*8) {
     std::cout << " ERROR got " << n << " chk=" << amc13Event.get_nAMC()*8 << std::endl;
@@ -426,7 +426,7 @@ bool GEMLocalModeDataSource::setRunAndEventInfo(edm::EventID &id, edm::TimeValue
   }
   // end of amc13Event
 
-  //std::cout << "GEMLocalModeDataSource got " << buf.size() << " words\n";
+  //std::cout << "GEMLocalModeDataSourceDebug got " << buf.size() << " words\n";
   if (buf.size()>12) {
     m_nGoodEvents++;
     if (m_goodEvents.size()<100)
@@ -462,18 +462,18 @@ bool GEMLocalModeDataSource::setRunAndEventInfo(edm::EventID &id, edm::TimeValue
 }
 
 
-void GEMLocalModeDataSource::produce(edm::Event &event) {
-  //std::cout << "GEMLocalModeDataSource::produce" << std::endl;
+void GEMLocalModeDataSourceDebug::produce(edm::Event &event) {
+  //std::cout << "GEMLocalModeDataSourceDebug::produce" << std::endl;
   event.put(std::move(buffers), "gemLocalModeDataSource");
   buffers.reset();
 }
 
-uint32_t GEMLocalModeDataSource::synchronizeEvents() {
-  //std::cout << "GEMLocalModeDataSource::synchronizeEvents" << std::endl;
+uint32_t GEMLocalModeDataSourceDebug::synchronizeEvents() {
+  //std::cout << "GEMLocalModeDataSourceDebug::synchronizeEvents" << std::endl;
   int32_t result= m_currenteventnumber -1;
   return(uint32_t) result;
 }
 
 
 #include "FWCore/Framework/interface/InputSourceMacros.h"
-DEFINE_FWK_INPUT_SOURCE(GEMLocalModeDataSource);
+DEFINE_FWK_INPUT_SOURCE(GEMLocalModeDataSourceDebug);

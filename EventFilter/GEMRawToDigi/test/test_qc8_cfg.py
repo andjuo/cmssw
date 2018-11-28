@@ -14,16 +14,9 @@ options.register('runNum',
 options.parseArguments()
 
 
-
-
-process.MessageLogger = cms.Service("MessageLogger",
-  statistics = cms.untracked.vstring(),
-  destinations = cms.untracked.vstring('cerr'),
-  cerr = cms.untracked.PSet(
-#      threshold = cms.untracked.string('WARNING')
-      threshold = cms.untracked.string('DEBUG')
-  )
-)
+process.load('FWCore.MessageService.MessageLogger_cfi')
+process.MessageLogger.cerr.threshold = cms.untracked.string('DEBUG')
+process.MessageLogger.cerr.FwkReport.reportEvery = 1000 ## really show only every 1000th msg
 
 process.load('Configuration.Geometry.GeometryExtended2017Reco_cff')
 process.load("DQM.Integration.config.FrontierCondition_GT_cfi")

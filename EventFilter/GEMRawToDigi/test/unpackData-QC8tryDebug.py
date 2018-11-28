@@ -129,7 +129,7 @@ process.maxEvents = cms.untracked.PSet(
 # Input source
 if (options.localMode) :
     process.source = cms.Source(
-        "GEMLocalModeDataSource",
+        "GEMLocalModeDataSourceDebug",
         fileNames = cms.untracked.vstring (options.inputFiles),
         skipEvents=cms.untracked.uint32(options.skipEvents),
         fedId = cms.untracked.int32( 1472 ),  # which fedID to assign
@@ -260,7 +260,7 @@ if (options.edm):
         SelectEvents = cms.untracked.PSet(
             SelectEvents = cms.vstring('path')
         ),
-        fileName = cms.untracked.string('gem_EDM-qc8spec.root')
+        fileName = cms.untracked.string('gem_EDM-qc8specDebug.root')
     )
 
     process.out = cms.EndPath(

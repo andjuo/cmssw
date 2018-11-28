@@ -96,7 +96,11 @@ void GEMRawToDigiModule::produce(edm::StreamID iID, edm::Event & iEvent, edm::Ev
     amc13Event->setCDFHeader(*word);
     amc13Event->setAMC13Header(*(++word));
 
-    std::cout << "GEMRawToDigi: cb5,cb0 =" << amc13Event->get_cb5() << "," << amc13Event->get_cb0() << "; nAMC=" << amc13Event->get_nAMC() << std::endl;
+    if ((amc13Event->get_cb5()!=0x5) || (amc13Event->get_cb0()!=0x0)) {
+      std::cout << "GEMRawToDigi: cb5,cb0 =" << amc13Event->get_cb5() << "," << amc13Event->get_cb0() << std::endl;
+      throw cms::Exception("failed cb5,cb0 check");
+    }
+    //std::cout << "nAMC=" << amc13Event->get_nAMC() << std::endl;
     
     // Readout out AMC headers
     for (uint8_t i = 0; i < amc13Event->nAMC(); ++i) {

@@ -1,7 +1,7 @@
-#ifndef EventFilter_GEMRawToDigi_GEMLocalModeDataSource_h
-#define EventFilter_GEMRawToDigi_GEMLocalModeDataSource_h
+#ifndef EventFilter_GEMRawToDigi_GEMLocalModeDataSourceDebug_h
+#define EventFilter_GEMRawToDigi_GEMLocalModeDataSourceDebug_h
 
-/** \class GEMLocalModeDataSource
+/** \class GEMLocalModeDataSourceDebug
  *  Description: Read GEM data recorded in "local mode" and put into FEDRawCollection
  *  Followed PixelSLinkDataInputSource
  *  \author Andrius Juodagalvis, Vilnius University, Nov 2018
@@ -19,10 +19,10 @@
 
 #include <iostream>
 
-class GEMLocalModeDataSource : public edm::ProducerSourceFromFiles {
+class GEMLocalModeDataSourceDebug : public edm::ProducerSourceFromFiles {
 public:
-  explicit GEMLocalModeDataSource(const edm::ParameterSet &pset, const edm::InputSourceDescription &desc);
-  ~GEMLocalModeDataSource() override;
+  explicit GEMLocalModeDataSourceDebug(const edm::ParameterSet &pset, const edm::InputSourceDescription &desc);
+  ~GEMLocalModeDataSourceDebug() override;
   static void fillDescriptions(edm::ConfigurationDescriptions & descriptions);
 
 private:

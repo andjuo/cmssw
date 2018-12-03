@@ -17,6 +17,10 @@
 #include "Utilities/StorageFactory/interface/Storage.h"
 #include "DataFormats/FEDRawData/interface/FEDRawDataCollection.h"
 
+#include <TH1F.h>
+#include <TH2F.h>
+#include "EventFilter/GEMRawToDigi/interface/VFATdata.h"
+
 #include <iostream>
 
 class GEMLocalModeDataSourceDebug : public edm::ProducerSourceFromFiles {
@@ -45,6 +49,13 @@ private:
   std::unique_ptr<FEDRawDataCollection> buffers;
   uint64_t m_nProcessedEvents, m_nGoodEvents;
   std::vector<uint32_t> m_goodEvents;
+
+  std::vector<gem::VFATdata> m_oldVFATdataV;
+
+  uint32_t m_lastEC;
+  TH1F *h1vfatFired;
+  TH1F *h1channelFired;
+  TH2F *h2vfatChannelFired;
 };
 
 

@@ -8,6 +8,7 @@
 
 #include <fstream>
 #include <algorithm>
+#include <TFile.h>
 
 GEMLocalModeDataSourceDebug::GEMLocalModeDataSourceDebug(const edm::ParameterSet & pset, edm::InputSourceDescription const &desc) :
   edm::ProducerSourceFromFiles(pset,desc,true), // true - RealData
@@ -20,7 +21,12 @@ GEMLocalModeDataSourceDebug::GEMLocalModeDataSourceDebug(const edm::ParameterSet
   m_processEvents(),
   m_nProcessedEvents(0),
   m_nGoodEvents(0),
-  m_goodEvents()
+  m_goodEvents(),
+  m_oldVFATdataV(),
+  m_lastEC(uint32_t(-1)),
+  h1vfatFired(NULL),
+  h1channelFired(NULL),
+  h2vfatChannelFired(NULL)
 {
   produces<FEDRawDataCollection>("gemLocalModeDataSource");
 
@@ -89,7 +95,14 @@ GEMLocalModeDataSourceDebug::GEMLocalModeDataSourceDebug(const edm::ParameterSet
   }
 
   m_runnumber = m_fileindex; // dummy run number
- }
+
+  h1vfatFired = new TH1F("h1vfatFired","vfat fired;vfat pos;count",24,-0.5,23.5);
+  h1vfatFired->SetDirectory(0);
+  h1channelFired = new TH1F("h1channelFired","channel fired;channel no;count",384,-0.5,383.5);
+  h1channelFired->SetDirectory(0);
+  h2vfatChannelFired = new TH2F("h2vfatChannelFired","vfat-channel firing;vfat pos;channel no",24,-0.5,23.5, 128,-0.5,127.5);
+  h2vfatChannelFired->SetDirectory(0);
+}
 
 
 GEMLocalModeDataSourceDebug::~GEMLocalModeDataSourceDebug()
@@ -101,6 +114,49 @@ GEMLocalModeDataSourceDebug::~GEMLocalModeDataSourceDebug()
     if (i>99) break;
   }
   std::cout << "\n";
+
+  if (h1vfatFired && h1channelFired) {
+    TH1F *h1vfatNotFired = (TH1F*)h1vfatFired->Clone("h1vfatNotFired");
+    h1vfatNotFired->Reset();
+    h1vfatNotFired->SetTitle("vfat Not fired");
+    TH1F *h1channelNotFired = (TH1F*)h1channelFired->Clone("h1channelNotFired");
+    h1channelNotFired->Reset();
+    h1channelNotFired->SetTitle("channel Not fired");
+    TH2F *h2vfatChannelNotFired = (TH2F*)h2vfatChannelFired->Clone("h2vfatChannelNotFired");
+    h2vfatChannelNotFired->Reset();
+    h2vfatChannelNotFired->SetTitle("vfat-channel Not fired");
+
+    for (int ibin=1; ibin<=h1vfatFired->GetNbinsX(); ibin++) {
+      if (h1vfatFired->GetBinContent(ibin)==0) {
+	float x= h1vfatFired->GetBinCenter(ibin);
+	h1vfatNotFired->Fill(x);
+      }
+    }
+    for (int ibin=1; ibin<=h1channelFired->GetNbinsX(); ibin++) {
+      if (h1channelFired->GetBinContent(ibin)==0) {
+	float x= h1channelFired->GetBinCenter(ibin);
+	h1channelNotFired->Fill(x);
+      }
+    }
+    for (int ibin=1; ibin<=h2vfatChannelFired->GetNbinsX(); ibin++) {
+      for (int jbin=1; jbin<=h2vfatChannelFired->GetNbinsY(); jbin++) {
+	if (h2vfatChannelFired->GetBinContent(ibin,jbin)==0) {
+	  float x= h2vfatChannelFired->GetXaxis()->GetBinCenter(ibin);
+	  float y= h2vfatChannelFired->GetYaxis()->GetBinCenter(jbin);
+	  h2vfatChannelNotFired->Fill(x,y,1.);
+	}
+      }
+    }
+
+    TFile fout("debug_histos.root","RECREATE");
+    h1vfatFired->Write();
+    h1vfatNotFired->Write();
+    h1channelFired->Write();
+    h1channelNotFired->Write();
+    h2vfatChannelFired->Write();
+    h2vfatChannelNotFired->Write();
+    fout.Close();
+  }
 }
 
 
@@ -223,11 +279,11 @@ bool GEMLocalModeDataSourceDebug::setRunAndEventInfo(edm::EventID &id, edm::Time
   std::vector<uint64_t> buf;
   const int tmpBufSize=40;
   uint64_t tmpBuf[tmpBufSize];
+  std::vector<gem::VFATdata> vfatDataV;
 
-  int iEventRead=0;
+  bool repeatedEC=false;
+
   do {
-  m_currenteventnumber++;
-  iEventRead++;
   buf.clear();
   //std::cout << "GEMLocalModeDataSourceDebug::setRunAndEventInfo m_currenteventnumber=" << m_currenteventnumber << std::endl;
 
@@ -321,27 +377,44 @@ bool GEMLocalModeDataSourceDebug::setRunAndEventInfo(edm::EventID &id, edm::Time
       buf.push_back(tmpBuf[0]);
       gebData.setChamberHeader(tmpBuf[0]);
 
-      if (prn) {
-	std::cout << "igeb=" << igeb << " vfatWordCount=" << gebData.get_vfatWordCnt() << std::endl;
+      if (gebData.vfatWordCnt() || prn) {
+	std::cout << "igeb=" << uint32_t(igeb) << " vfatWordCount=" << gebData.get_vfatWordCnt() << std::endl;
 	std::cout << " -- " << gebData.getChamberHeader_str() << std::endl;
       }
 
       if (gebData.vfatWordCnt()%3!=0) {
-	throw cms::Exception("gebData.vfatCordCnt()%3!=0");
+	throw cms::Exception("gebData.vfatWordCnt()%3!=0");
       }
 
-      // check if one buffer accommodates information
-      if (gebData.vfatWordCnt() <= tmpBufSize) {
-	// one buffer is enough
-	n = inpFile.read((char*)tmpBuf, gebData.vfatWordCnt() * sizeof(uint64_t));
-	for (int ii=0; ii < gebData.vfatWordCnt(); ii++) {
+      // use buffer several times
+      const int allowNumBufs= 32000/tmpBufSize; // 32k is firmware limit
+      if (allowNumBufs * tmpBufSize<gebData.vfatWordCnt()) {
+	std::cout << "update code: tmpBufSize=" << tmpBufSize << ", allowNumBufs=" << allowNumBufs << ", tmpBufSize*allowNumBufs=" << (tmpBufSize*allowNumBufs) << " (firmware limit), gebData.vfatWordCnt=" << gebData.vfatWordCnt() << std::endl;
+	std::cout << "current file name is " << m_filenames[m_fileindex-1] << std::endl;
+	return false;
+      }
+
+      int neededBufs= gebData.vfatWordCnt()/tmpBufSize;
+      if (gebData.vfatWordCnt()%tmpBufSize>0) neededBufs++;
+      if (neededBufs>allowNumBufs) {
+	std::cout << "code error (neededBufs>allowNumBufs)\n";
+	return false;
+      }
+      for (int iUse=0; iUse<neededBufs; iUse++) {
+	uint32_t chunkSize= tmpBufSize;
+	if (iUse*tmpBufSize+chunkSize > gebData.vfatWordCnt()) {
+	  chunkSize= gebData.vfatWordCnt() - iUse*tmpBufSize;
+	}
+	//std::cout << "iUse=" << iUse << ", chunkSize=" << chunkSize << "\n";
+	n = inpFile.read((char*)tmpBuf, chunkSize * sizeof(uint64_t));
+	for (unsigned int ii=0; ii < chunkSize; ii++) {
 	  buf.push_back(tmpBuf[ii]);
 	}
 
 	if (prn) {
 	  std::cout << "gebData.inputID= " << gebData.get_inputID() << "\n";
 	  if (gebData.get_inputID()!=0) std::cout << " not ZERO!!\n\n";
-	  for (int ii=0; ii<gebData.vfatWordCnt(); ii+=3) {
+	  for (unsigned int ii=0; ii<chunkSize; ii+=3) {
 	    gem::VFATdata vfd;
 	    vfd.read_fw(tmpBuf[ii]);
 	    vfd.read_sw(tmpBuf[ii+1]);
@@ -349,42 +422,36 @@ bool GEMLocalModeDataSourceDebug::setRunAndEventInfo(edm::EventID &id, edm::Time
 	    std::cout << " ii/3=" << ii/3 << " " << " vfatPos=" << vfd.get_pos() << "\n";
 	  }
 	}
-      }
-      else {
-	// use buffer several times
-	const int allowNumBufs= 32000/tmpBufSize; // 32k is firmware limit
-	if (allowNumBufs * tmpBufSize<gebData.vfatWordCnt()) {
-	  std::cout << "update code: tmpBufSize=" << tmpBufSize << ", allowNumBufs=" << allowNumBufs << ", tmpBufSize*allowNumBufs=" << (tmpBufSize*allowNumBufs) << " (firmware limit), gebData.vfatWordCnt=" << gebData.vfatWordCnt() << std::endl;
-	  std::cout << "current file name is " << m_filenames[m_fileindex-1] << std::endl;
-	  return false;
-	}
 
-	int neededBufs= gebData.vfatWordCnt()/tmpBufSize;
-	if (gebData.vfatWordCnt()%tmpBufSize>0) neededBufs++;
-	if (neededBufs>allowNumBufs) {
-	  std::cout << "code error (neededBufs>allowNumBufs)\n";
-	  return false;
-	}
-	for (int iUse=0; iUse<neededBufs; iUse++) {
-	  uint32_t chunkSize= tmpBufSize;
-	  if (iUse*tmpBufSize+chunkSize > gebData.vfatWordCnt()) {
-	    chunkSize= gebData.vfatWordCnt() - iUse*tmpBufSize;
-	  }
-	  std::cout << "iUse=" << iUse << ", chunkSize=" << chunkSize << "\n";
-	  n = inpFile.read((char*)tmpBuf, chunkSize * sizeof(uint64_t));
-	  for (unsigned int ii=0; ii < chunkSize; ii++) {
-	    buf.push_back(tmpBuf[ii]);
-	  }
-
-	  if (prn) {
-	    std::cout << "gebData.inputID= " << gebData.get_inputID() << "\n";
-	    if (gebData.get_inputID()!=0) std::cout << " not ZERO!!\n\n";
-	    for (unsigned int ii=0; ii<chunkSize; ii+=3) {
-	      gem::VFATdata vfd;
-	      vfd.read_fw(tmpBuf[ii]);
-	      vfd.read_sw(tmpBuf[ii+1]);
-	      vfd.read_tw(tmpBuf[ii+2]);
-	      std::cout << " ii/3=" << ii/3 << " " << " vfatPos=" << vfd.get_pos() << "\n";
+	if (h1vfatFired || h1channelFired) {
+	  //std::cout << "chunkSize=" << chunkSize << std::endl;
+	  for (unsigned int ii=0; ii<chunkSize; ii+=3) {
+	    gem::VFATdata vfd;
+	    vfd.read_fw(tmpBuf[ii]);
+	    vfd.read_sw(tmpBuf[ii+1]);
+	    vfd.read_tw(tmpBuf[ii+2]);
+	    //std::cout << " ii/3=" << ii/3 << " " << " vfatPos=" << vfd.get_pos() << "\n";
+	    vfatDataV.push_back(vfd);
+	    h1vfatFired->Fill(vfd.get_pos());
+	    uint64_t lsData = vfd.lsData(); // 0-63
+	    uint64_t msData = vfd.msData(); // 64-127
+	    float channelShift = (vfd.get_pos()/8)*float(128);
+	    std::cout << "m_currenteventnumber=" << m_currenteventnumber << " ";
+	    std::cout << "event counter=" << vfd.get_ec() << ", vfat pos=" << vfd.get_pos() << " channelShift=" << channelShift << ", ver=" << vfd.version() << std::endl;
+	    std::cout << "lsData= 0x" << std::hex << lsData << ", msData=0x" << msData << std::dec << std::endl;
+	    std::cout << "VFATdata= 0x" << std::hex << vfd.get_fw() << " " << vfd.get_sw() << " " << vfd.get_tw() << std::dec << std::endl;
+	    std::cout << "  vfd.bc=" << vfd.get_bc() << std::endl;
+	    for (uint64_t ibit=0; ibit<64; ibit++) {
+	      if ((lsData & (uint64_t(1)<<ibit))!=0) {
+		std::cout << "lsdata ibit=" << ibit << std::endl;
+		h1channelFired->Fill(float(ibit)+channelShift);
+		h2vfatChannelFired->Fill(vfd.get_pos(),float(ibit),1.);
+	      }
+	      if ((msData & (uint64_t(1)<<ibit))!=0) {
+		std::cout << "msdata ibit=" << ibit+64+channelShift << std::endl;
+		h1channelFired->Fill(float(ibit+64)+channelShift);
+		h2vfatChannelFired->Fill(vfd.get_pos(),float(ibit)+64,1.);
+	      }
 	    }
 	  }
 	}
@@ -412,6 +479,11 @@ bool GEMLocalModeDataSourceDebug::setRunAndEventInfo(edm::EventID &id, edm::Time
       amcData.setAMCTrailer(tmpBuf[1]);
       std::cout << " -- " << amcData.getGEMeventTrailer_str() << "\n -- " << amcData.getAMCtrailer_str() << std::endl;
     }
+    else {
+      amcData.setGEMeventTrailer(tmpBuf[0]);
+      amcData.setAMCTrailer(tmpBuf[1]);
+      std::cout << " amcData bxID=" << amcData.get_bxID() << "\n";
+    }
   } // end of amc loop
 
   // read AMC13trailer and CDFTrailer
@@ -424,6 +496,11 @@ bool GEMLocalModeDataSourceDebug::setRunAndEventInfo(edm::EventID &id, edm::Time
     std::cout << " -- " << amc13Event.getAMC13Trailer_str() << "\n"
 	      << " -- " << amc13Event.getCDFTrailer_str() << std::endl;
   }
+  else {
+    amc13Event.setAMC13Trailer(tmpBuf[0]);
+    amc13Event.setCDFTrailer(tmpBuf[1]);
+    std::cout << "amc13Event bxId= " << amc13Event.get_bxId() << " and " << amc13Event.get_bxIdT() << std::endl;
+  }
   // end of amc13Event
 
   //std::cout << "GEMLocalModeDataSourceDebug got " << buf.size() << " words\n";
@@ -431,7 +508,26 @@ bool GEMLocalModeDataSourceDebug::setRunAndEventInfo(edm::EventID &id, edm::Time
     m_nGoodEvents++;
     if (m_goodEvents.size()<100)
       m_goodEvents.push_back(m_currenteventnumber-1);
+
+    if (vfatDataV.size()>0) {
+      if (m_oldVFATdataV.size()>0) {
+	std::cout << "comparing m_oldVFATdataV[" << m_oldVFATdataV.size() << "] to VFATdataV[" << vfatDataV.size() << "]\n";
+	int matched=0;
+	for (unsigned int iold=0; iold<m_oldVFATdataV.size(); iold++){
+	  for (unsigned int inew=0; inew<vfatDataV.size(); inew++) {
+	    if (m_oldVFATdataV.at(iold).equal(vfatDataV.at(inew))) {
+	      matched=1;
+	      std::cout << "iold=" << iold << " equal inew=" << inew << "\n";
+	    }
+	  }
+	}
+	std::cout << " -- " << ((matched) ? "matched" : "no match") << std::endl;
+      }
+      m_oldVFATdataV = vfatDataV;
+    }
   }
+
+  m_currenteventnumber++;
 
   if (m_processEvents.size() &&
       (std::find(m_processEvents.begin(),m_processEvents.end(),m_currenteventnumber-1)!=m_processEvents.end())) {
@@ -440,6 +536,7 @@ bool GEMLocalModeDataSourceDebug::setRunAndEventInfo(edm::EventID &id, edm::Time
   }
   }
   while (m_processEvents.size());
+
 
   //
   // create FEDRawData

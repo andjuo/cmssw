@@ -224,10 +224,7 @@ bool GEMLocalModeDataSource::setRunAndEventInfo(edm::EventID &id, edm::TimeValue
   const int tmpBufSize=40;
   uint64_t tmpBuf[tmpBufSize];
 
-  int iEventRead=0;
   do {
-  m_currenteventnumber++;
-  iEventRead++;
   buf.clear();
   //std::cout << "GEMLocalModeDataSource::setRunAndEventInfo m_currenteventnumber=" << m_currenteventnumber << std::endl;
 
@@ -322,12 +319,12 @@ bool GEMLocalModeDataSource::setRunAndEventInfo(edm::EventID &id, edm::TimeValue
       gebData.setChamberHeader(tmpBuf[0]);
 
       if (prn) {
-	std::cout << "igeb=" << igeb << " vfatWordCount=" << gebData.get_vfatWordCnt() << std::endl;
+	std::cout << "igeb=" << uint32_t(igeb) << " vfatWordCount=" << gebData.get_vfatWordCnt() << std::endl;
 	std::cout << " -- " << gebData.getChamberHeader_str() << std::endl;
       }
 
       if (gebData.vfatWordCnt()%3!=0) {
-	throw cms::Exception("gebData.vfatCordCnt()%3!=0");
+	throw cms::Exception("gebData.vfatWordCnt()%3!=0");
       }
 
       // check if one buffer accommodates information
@@ -432,6 +429,8 @@ bool GEMLocalModeDataSource::setRunAndEventInfo(edm::EventID &id, edm::TimeValue
     if (m_goodEvents.size()<100)
       m_goodEvents.push_back(m_currenteventnumber-1);
   }
+
+  m_currenteventnumber++;
 
   if (m_processEvents.size() &&
       (std::find(m_processEvents.begin(),m_processEvents.end(),m_currenteventnumber-1)!=m_processEvents.end())) {

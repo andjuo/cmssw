@@ -204,6 +204,7 @@ process.load('EventFilter.GEMRawToDigi.muonGEMDigis_cfi')
 process.muonGEMDigis.InputLabel = cms.InputTag("source","gemLocalModeDataSource")
 process.muonGEMDigis.useDBEMap = True
 process.muonGEMDigis.unPackStatusDigis = True
+process.muonGEMDigis.embedAMC13EventData = True
 
 #process.load('Geometry.GEMGeometryBuilder.gemGeometry_cfi')
 process.load('RecoLocalMuon.GEMRecHit.gemRecHits_cfi')

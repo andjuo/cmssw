@@ -42,8 +42,7 @@ process.source = cms.Source("PoolSource",
   fileNames = cms.untracked.vstring(
 #    'file:/eos/cms/store/express/Commissioning2018/ExpressCosmics/FEVT/Express-v1/000/310/292/00000/6C23251D-4F18-E811-AEC5-02163E01A41D.root'
 #        'file:gem_EDM.root'
-        #'file:../../../EventFilter/GEMRawToDigi/test/gem_EDM-qc8spec.root'
-        'file:gem_EDM-qc8spec-runNum{0}.root'.format(options.runNum)
+        'file:../../../EventFilter/GEMRawToDigi/test/gem_EDM-qc8specDebug.root'
   ),
   #inputCommands = cms.untracked.vstring(
   #  'drop *',

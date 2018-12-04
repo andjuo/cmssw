@@ -73,7 +73,7 @@ options.register('evtDisp',
 options.parseArguments()
 
 
-pname="Raw2Digi"
+pname="RECO"
 if (options.process!=""):
     pname=options.process
 #process = cms.Process(pname)
@@ -82,7 +82,7 @@ if (options.process!=""):
 #process = cms.Process(pname, eras.Run2_2017, eras.run2_GEM_2017)
 from Configuration.StandardSequences.Eras import eras
 
-process = cms.Process('RECO',eras.Run2_2017,eras.run2_GEM_2017)
+process = cms.Process(pname,eras.Run2_2017,eras.run2_GEM_2017)
 
 process.load('Configuration.StandardSequences.L1Reco_cff')
 process.load('Configuration.StandardSequences.Reconstruction_cff')
@@ -115,6 +115,7 @@ if (options.streamer) :
 else :
     process.source = cms.Source (
         "PoolSource",
+        labelRawDataLikeMC = cms.untracked.bool(False),
         fileNames = cms.untracked.vstring (options.inputFiles),
         skipEvents=cms.untracked.uint32(options.skipEvents)
     )
